@@ -1,0 +1,44 @@
+[
+  {
+    "objectID": "posts.html",
+    "href": "posts.html",
+    "title": "Blog Posts",
+    "section": "",
+    "text": "Order By\n       Default\n         \n          Title\n        \n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\n\n\n\n\n\nTest document\n\n\n\n\n\n\nblog\n\n\ntest\n\n\n\n\n\n\n\n\n\nFeb 7, 2024\n\n\nPaweł Wieczyński\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "pawel-wieczynski.github.io",
+    "section": "",
+    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Me",
+    "section": "",
+    "text": "This is my blog where I share thoughts on different topics."
+  },
+  {
+    "objectID": "about.html#about-me",
+    "href": "about.html#about-me",
+    "title": "About Me",
+    "section": "",
+    "text": "This is my blog where I share thoughts on different topics."
+  },
+  {
+    "objectID": "posts/2025-02-07-test_document/index.html",
+    "href": "posts/2025-02-07-test_document/index.html",
+    "title": "Test document",
+    "section": "",
+    "text": "This is example blog post to test if my Github Pages are configured correctly. Let’s plot formula of the function \\[\nf(x) = \\exp \\left( \\frac{1}{2}x \\right) + \\sin^2(x)\n\\]\n\n\n\n\nx = seq(-1, 1, 0.01)\ny = exp(x/2) + sin(x)^2\nplot(x, y, type = 'l')"
+  },
+  {
+    "objectID": "posts/2025-02-07-test_document/index.html#test-document",
+    "href": "posts/2025-02-07-test_document/index.html#test-document",
+    "title": "Test document",
+    "section": "",
+    "text": "This is example blog post to test if my Github Pages are configured correctly. Let’s plot formula of the function \\[\nf(x) = \\exp \\left( \\frac{1}{2}x \\right) + \\sin^2(x)\n\\]\n\n\n\n\nx = seq(-1, 1, 0.01)\ny = exp(x/2) + sin(x)^2\nplot(x, y, type = 'l')"
+  }
+]

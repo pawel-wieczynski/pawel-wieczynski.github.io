@@ -1,0 +1,24 @@
+---
+title: "Test document"
+author: "Paweł Wieczyński"
+date: "2024-02-07"
+categories: [blog, test]
+summary: "This is my test blog post."
+format:
+  html:
+    toc: true
+---
+## Test document
+
+### TeX formula
+This is example blog post to test if my *Github Pages* are configured correctly. Let's plot formula of the function 
+$$
+f(x) = \exp \left( \frac{1}{2}x \right) + \sin^2(x)
+$$
+
+### Vizualization
+```{r}
+x = seq(-1, 1, 0.01)
+y = exp(x/2) + sin(x)^2
+plot(x, y, type = 'l')
+```

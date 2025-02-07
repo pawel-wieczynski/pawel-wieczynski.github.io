@@ -1,0 +1,7 @@
+---
+title: "About Me"
+format: html
+---
+
+## About Me
+This is my blog where I share thoughts on different topics.
