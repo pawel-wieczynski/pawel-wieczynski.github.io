@@ -1,0 +1,460 @@
+---
+title: "Word2Vec skip-gram from scratch in R"
+author: "Paweł Wieczyński"
+date: "2024-02-07"
+categories: [NLP, torch]
+format:
+  html:
+    toc: true
+---
+
+## Introduction
+
+**Word2Vec** models were first presented in the paper "[*Efficient Estimation of Word Representations in Vector Space*](https://arxiv.org/abs/1301.3781)" by Google team (Mikolov et al. 2013). They presented two model architectures:
+
+-   **Continuous Bag-of-Words Model** aka **CBOW**, where given context words we predict target words
+
+-   **Continuous Skip-gram Model** aka **skip-gram**, where given target words we predict context words.
+
+The goal is to find numerical representation of raw data, in our case those will be text tokens. This numerical representation should be a collection of dense vectors in $d$-dimensional Euclidean space.
+
+Since then embedding models have been widely used in the industry. For examples of use-cases we recommend an essay [*What are embeddings?*](https://vickiboykis.com/what_are_embeddings/) by Vicki Boykis.
+
+In this tutorial we'll explore step-by-step how skip-gram model works accompanied by code in `R` language and a toy example.
+
+We'll use object-oriented approach with `R6` interface (<https://r6.r-lib.org/index.html>). We'll use `torch` library (<https://torch.mlverse.org/>) for automatic differentiation and GPU-accelerated matrix operations. As of February 2025, `torch` in `R` suuports `CUDA v11.8`. Below code was run on *NVIDIA GeForce GTX 1650 Ti*.
+
+```{r}
+library(torch) # v0.13.0
+library(R6)    # v2.5.1
+```
+
+```{r, eval = FALSE}
+set_device = function() {
+  if (cuda_is_available()) {
+    device = torch_device("cuda")
+    cat("Using GPU (CUDA)\n")
+  } else {
+    device = torch_device("cpu")
+    cat("Using CPU\n")
+  }
+}
+```
+
+## Skip-gram workflow
+
+Input to our model is a sequence of $n$ tokens $\mathbf{x} = (x_1, x_2, \dots, x_n)$. We must also specify dimensionality $d$ of a target **embedding space**. Thus a contructor to initialize our class is defined as follows.
+
+```{r, eval = FALSE}
+initialize = function(tokens, embedding_dim) {
+  self$tokens = tokens
+  self$embedding_dim = embedding_dim
+}
+```
+
+### Build vocabulary
+
+Among $n$ tokens there are $m \leq n$ unique tokens. Let's denote our **vocabulary**
+
+$$
+V = \left(v_1, v_2, \dots , v_m \right)
+$$
+
+and the set of corresponding indices $C = \lbrace 1, 2, \dots, m \rbrace$.
+
+```{r, eval = FALSE}
+build_vocabulary = function() {
+  unique_tokens = unique(self$tokens)
+  token_ids = seq_along(unique_tokens)
+  self$vocabulary = setNames(token_ids, unique_tokens)
+}
+```
+
+### Convert tokens to indices
+
+We convert sequence of tokens $\mathbf{x} = (x_1, x_2, \dots, x_n)$ to sequence of integers $( m_1, m_2, \dots , m_n)$ where $m_i \in C$ for $i = 1, 2, \dots, n$.
+
+```{r, eval = FALSE}
+convert_tokens_to_indices = function() {
+  self$token_indices = sapply(self$tokens, function(token) {
+    self$vocabulary[[token]]
+  })
+}
+```
+
+### Initialize model weights
+
+We need to initialize two matrices:
+
+-   $W_1$ of dimensionality $m \times d$
+
+-   $W_2$ of dimensionality $d \times m$
+
+Matrix $W_1$ encodes hidden state which eventually we'll interpret as the word embeddings of our vocabulary $V$.
+
+```{r, eval = FALSE}
+initialize_weights = function() {
+  vocabulary_size = length(self$vocabulary)
+  self$W1 = torch_randn(
+    size = c(vocabulary_size, self$embedding_dim)
+    , requires_grad = TRUE
+    , dtype = torch_float32()
+  )
+  self$W2 = torch_randn(
+    size = c(self$embedding_dim, vocabulary_size)
+    , requires_grad = TRUE
+    , dtype = torch_float32()
+  )
+}
+```
+
+### Train model
+
+In this tutorial we'll find optimal model weights via vanilla gradient descent. As an exercise we recommend to try out this code with more efficient optimizers, e.g. SGD or Adam. For survey of different optimizers check out this video: <https://www.youtube.com/watch?v=MD2fYip6QsQ>
+
+In order to train our model we must specify 3 additional parameters:
+
+-   $l$ - window size for skip-gram method
+
+-   number of epochs during the training
+
+-   $\eta$ - learning rate for gradient descent.
+
+There will be 3 loops:
+
+1.  Outer loop for each epoch.
+2.  Then for each token $x_i$, $i =1,2,\dots, n$, we take the window $[x_{i-l}, \dots, x_{i-1}, x_i, x_{i+1}, \dots x_{i+l}]$. It gives us pairs of **center words** and **context words** $(x_i, x_j)$, $j \in \lbrace i-l, \dots i-1, i+1, \dots i+l \rbrace$.
+3.  For each pair $(x_i, x_j)$ we'll perform **forward pass, loss calculation** and **backpropagation**.
+
+```{r, eval = FALSE}
+for (epoch in seq_len(epochs)) {
+  total_loss = 0
+  
+  # Loop over each token position as the center word
+  for (center_position in seq_along(self$tokens)) {
+    center_word = self$tokens[[center_position]]
+    center_index   = self$vocabulary[[center_word]]
+          
+    # Determine context window boundaries
+    start_position = max(1, center_position - window_size)
+    end_posisiton   = min(length(self$tokens), center_position + window_size)
+          
+    # For each context word
+    for (context_position in seq(start_position, end_posisiton)) {
+      # If center position is equal to context position then skip to the next iteration
+      if (context_position == center_position) next
+      context_word = self$tokens[[context_position]]
+      context_index   = self$vocabulary[[context_word]]
+    
+      # FORWARD PASS
+      # CALCULATE LOSS
+      # BACKPROPAGATION
+  }}}
+```
+
+#### Forward pass
+
+We project center word's embedding $\left( W_1 \right)_{i\cdot}$ (i.e. $i$-th row of matrix $W_1$) onto column space of the matrix $W_2$. It gives us vector $v_{ij}$ of length $m$. We turn this vector into probabilities via **softmax** function
+
+$$
+p(v_{ij}) = \frac{\exp(v_{ij})}{\sum_{k=1}^m \exp(v_{ik})}
+$$
+
+```{r, eval = FALSE}
+forward_pass = function(center_word_index) {
+  hidden_layer = self$W1[center_word_index, ]
+  output_layer = hidden_layer$matmul(self$W2)
+  return(output_layer)
+}
+```
+
+#### Loss calculation
+
+Now for the pair $(x_i, x_j)$ we have a vector of probabilities $p(v_{ij}) = (p_1, p_2, \dots , p_k)$. True label of the word $x_j$ is one-hot vector $y_j$ with $1$ at $j$-th position and $0$'s elsewhere. **Cross-entropy loss** is then:
+
+$$
+L(y_j, p(v_{ij})) = - \sum_{k=1}^m (y_j)_k \log_2 p_k = -\log_2 p_j
+$$
+
+[Technical note]{.underline}. `torch::nnf_cross_entropy()` function takes 2 arguments:
+
+-   input tensor of shape `(batch_size, size_of_vocabulary)`. Since we process each center word at a time, then in our case `batch_size = 1`, so we apply `unsqueeze()` function on the vector $v_{ij}$.
+
+-   target tensor containing index $m_j \in \lbrace 1, 2, \dots, m \rbrace$ of our context word $x_j$.
+
+In the backend, `torch::nnf_cross_entropy()` applies softmax on the input tensor and one-hot encodes target tensor.
+
+```{r, eval = FALSE}
+compute_cross_entropy(output_layer, context_word_index) {
+  y_hat = output_layer$unsqueeze(dim = 1)
+  y_true = torch_tensor(context_word_index, dtype = torch_long())
+  loss = nnf_cross_entropy(y_hat, y_true)
+  return(loss)
+}
+```
+
+#### Backpropagation
+
+`torch` automatically calculates derivatives $\nabla W_1$, $\nabla W_2$ of the loss function $L$ with respect to the model weights $W_1$ and $W_2$. Then we update matrices $W_1$ and $W_2$ in the direction of the steepest descent:
+
+$$
+W \leftarrow W - \eta \ \nabla W
+$$
+
+```{r, eval = FALSE}
+update_weights = function(loss, learning_rate) {
+  loss$backward()
+  
+  with_no_grad({
+    self$W1$sub_(learning_rate * self$W1$grad)
+    self$W2$sub_(learning_rate * self$W2$grad)
+    
+    # Zero out gradients for next iteration
+    self$W1$grad$zero_()
+    self$W2$grad$zero_()
+  })
+}
+```
+
+## Putting it all together into `R6` interface
+
+```{r}
+Word2Vec = R6::R6Class(
+  classname = "Word2Vec",
+  
+  public = list(
+    # Attributes created during initialization
+    tokens = NULL,
+    embedding_dim = NULL,
+    
+    # Attributes created during runtime
+    device = NULL,
+    vocabulary = NULL,
+    token_indices = NULL,
+    W1 = NULL,
+    W2 = NULL,
+    
+    # Methods
+    initialize = function(tokens, embedding_dim) {
+      self$tokens = tokens
+      self$embedding_dim = embedding_dim
+    },
+    
+    set_device = function() {
+      if (cuda_is_available()) {
+        device = torch_device("cuda")
+        cat("Using GPU (CUDA)\n")
+      } else {
+        device = torch_device("cpu")
+        cat("Using CPU\n")
+      }
+    },
+    
+    build_vocabulary = function() {
+      unique_tokens = unique(self$tokens)
+      token_ids = seq_along(unique_tokens)
+      self$vocabulary = setNames(token_ids, unique_tokens)
+    },
+    
+    convert_tokens_to_indices = function() {
+      self$token_indices = sapply(self$tokens, function(token) {
+        self$vocabulary[[token]]
+      })
+    },
+    
+    initialize_weights = function() {
+      vocabulary_size = length(self$vocabulary)
+      self$W1 = torch_randn(
+        size = c(vocabulary_size, self$embedding_dim)
+        , requires_grad = TRUE
+        , dtype = torch_float32()
+        , device = self$device
+      )
+      self$W2 = torch_randn(
+        size = c(self$embedding_dim, vocabulary_size)
+        , requires_grad = TRUE
+        , dtype = torch_float32()
+        , device = self$device
+      )
+    },
+    
+    forward_pass = function(center_word_index) {
+      hidden_layer = self$W1[center_word_index, ]
+      output_layer = hidden_layer$matmul(self$W2)
+      return(output_layer)
+    },
+    
+    compute_cross_entropy = function(output_layer, context_word_index) {
+      y_hat = output_layer$unsqueeze(dim = 1)
+      y_true = torch_tensor(
+        context_word_index
+        , dtype = torch_long()
+        , device = self$device
+      )
+      loss = nnf_cross_entropy(y_hat, y_true)
+      return(loss)
+    },
+    
+    update_weights = function(loss, learning_rate) {
+      loss$backward()
+      
+      with_no_grad({
+        self$W1$sub_(learning_rate * self$W1$grad)
+        self$W2$sub_(learning_rate * self$W2$grad)
+        
+        # Zero out gradients for next iteration
+        self$W1$grad$zero_()
+        self$W2$grad$zero_()
+      })
+    },
+    
+    train_model = function(window_size, epochs, learning_rate) {
+      for (epoch in seq_len(epochs)) {
+      total_loss = 0
+      
+      # Loop over each token position as the center word
+      for (center_position in seq_along(self$tokens)) {
+        center_word = self$tokens[[center_position]]
+        center_index   = self$vocabulary[[center_word]]
+              
+        # Determine context window boundaries
+        start_position = max(1, center_position - window_size)
+        end_posisiton   = min(length(self$tokens), center_position + window_size)
+              
+        # For each context word
+        for (context_position in seq(start_position, end_posisiton)) {
+          # If center position is equal to context position then skip to the next iteration
+          if (context_position == center_position) next
+          context_word = self$tokens[[context_position]]
+          context_index   = self$vocabulary[[context_word]]
+                
+            # Forward pass
+            output_layer = self$forward_pass(center_index)
+            
+            # Compute loss
+            loss = self$compute_cross_entropy(output_layer, context_index)
+            total_loss = total_loss + as.numeric(loss$item())
+            
+            # Update params
+            self$update_weights(loss, learning_rate)
+          }
+        }
+        
+        cat(sprintf("Epoch %d/%d, Loss: %.4f\n", epoch, epochs, total_loss))
+      }
+    }
+    
+  )
+)
+```
+
+## Toy example
+
+Let's craft 20 sentences corpus on which we'll train our model (corpus generated by `GPT o1`).
+
+```{r}
+text_corpus = "My cat likes food. I give food to cat. Boy sees cat. Girl sees dog. Dog eats food. Cat sleeps now. Girl has cat. Boy feeds dog. Cat likes boy. Dog likes girl. Girl eats food. Boy runs home. Cat follows boy. Dog follows girl. Food is good. Cat is happy. Girl is happy. Boy is happy. Dog is hungry. They share food."
+```
+
+We apply some preprocessing steps:
+
+-   remove punctuation
+
+-   convert text to lower-case
+
+-   split into tokens, where each token represent a word.
+
+```{r}
+prep_text = gsub("[[:punct:]]", "", tolower(text_corpus))
+tokens = strsplit(prep_text, "\\s+") |> unlist()
+
+table(tokens) |> as.data.frame()
+```
+
+It gave us:
+
+-   $n  = 63$ - number of tokens
+
+-   $m=25$ - vocabulary size.
+
+Now we train our model with $d = 15$, $l=1$, $\eta = 0.1$ and $50$ epochs.
+
+```{r}
+# set seed for reproducibility
+set.seed(1234)
+torch_manual_seed(1234)
+
+# Create the model
+model = Word2Vec$new(tokens = tokens, embedding_dim = 15)
+
+# Run the model
+model$set_device()
+model$build_vocabulary()
+model$convert_tokens_to_indices()
+model$initialize_weights()
+
+# Train the model
+window_size  = 1   # each side
+epochs       = 50
+learning_rate = 0.1
+
+model$train_model(window_size, epochs, learning_rate)
+
+```
+
+### PCA projection of embedding space
+
+Our final word embeddings are rows of the matrix $W_1$ of dimensionality $25 \times 15$. We extract principal components of $W_1$.
+
+```{r}
+embedding_space = model$W1 |> as.matrix()
+pca = prcomp(embedding_space, center = TRUE, scale. = TRUE)
+summary(pca)
+```
+
+Let's project embedding space into first two principal components which together explain $37.43\%$ of total variance.
+
+```{r}
+library(ggplot2) # v3.5.1
+
+pca_projection = embedding_space %*% pca$rotation[, 1:2]
+rownames(pca_projection) = names(model$vocabulary)
+
+ggplot(data.frame(pca_projection), aes(x = PC1, y = PC2)) +
+  geom_point() +
+  geom_text(aes(label = rownames(pca_projection)), nudge_x = 0.1) +
+  theme_bw() +
+  labs(title = "PCA Projection of Word Embeddings")
+```
+
+As we can see, "*similar" words* are close each other:
+
+-   nouns *boy* and *girl*
+
+-   verbs *sees, follows, runs,* and *likes*
+
+However *dog* and *cat* are far apart. We might retrain the model with larger corpora, bigger embedding space, wider context window, more epochs, more robust optimizer (vanilla GD could be stuck in local minima). Altough words *dog* and *sleeps,* which are semantically related in case of my Labrador, are close each other.
+
+## Futher steps
+
+In practice, with huge vocabularies and enormous corpora, calculating denominator in the softmax function is quite expensive. To avoid that we use **skip-gram with negative sampling** aka **SGNC**, where having a pair *(center word, context word)* we pick randomly few context words as negative samples and fit binary logistic regression. For more details we refer to the chapter 6.8 of the book *Speech and Language Processing* by Daniel Jurafsky and James Martin.
+
+## Thinking exercises
+
+1.  In fact, for each word $v_i$ from the vocabulary $V$ we have two word embeddings:
+
+    -   $i$-th row of the matrix $W_1$ where $v_i$ served as a center word
+    -   $i$-th column of the matrix $W_2$ where $v_i$ served as a context word.
+
+    Do we get better word representation if combine (e.g. average) both vectors?
+
+2.  Softmax function has time complexity $\mathcal{O}(n)$. Replace it with **hierarchical softmax** which has time complexity $\mathcal{O} (\log n )$.
+
+## References
+
+1.  Mikolov T. et al., *Efficient Estimation of Word Representations in Vector Space*, 2013, <https://arxiv.org/abs/1301.3781>
+2.  *Boykis V., What are embeddings?*, <https://vickiboykis.com/what_are_embeddings/>
+3.  Chang W (2022). *R6: Encapsulated Classes with Reference Semantics*. <https://r6.r-lib.org>, <https://github.com/r-lib/R6/>.
+4.  <https://torch.mlverse.org/>
+5.  Kundu S.*, Who's Adam and What's He Optimizing?, 2024,* <https://www.youtube.com/watch?v=MD2fYip6QsQ>
+6.  Jurafsky D., Martin J. H., *Speech and Language Processing*, 2024, <https://web.stanford.edu/~jurafsky/slp3/>
