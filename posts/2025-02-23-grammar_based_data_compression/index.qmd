@@ -1,0 +1,359 @@
+---
+title: "Grammar-based data compression"
+author: "Paweł Wieczyński"
+date: "2024-02-23"
+categories: [grammar, compression, python]
+format:
+  html:
+    toc: true
+---
+
+## Introduction
+
+Let $\mathbb{X}$ denote fixed finite alphabet (in case of character level encoders) or fixed vocabulary (in case of word level encoders). We have a string $x \in \mathbb{X}^*$ to be compressed. Based on [paper by Kieffer and Young](https://ieeexplore.ieee.org/document/841160), it can be achieved efficiently in a two-step procedure:
+
+1.  *grammar transform* converts string $x$ into grammar $G_x$
+
+2.  *grammar encoder* converts grammar $G_x$ into binary string $B(G_x)$.
+
+They define a *context-free grammar* as a quadruple $G = (V, T, P, S)$ where:
+
+-   $V$ is a finite nonempty set of non-terminal symbols
+
+-   $T$ is a finite nonempty set of terminal symbols
+
+-   $P$ is a finite set of production rules $V \to (V \cup T)^*$
+
+-   $S \in V$ is a start symbol.
+
+## Character level encoder
+
+### Lempel-Ziv parser
+
+First, we need to compress original string $x \in \mathbb{X}^*$ into a list of substrings. This can be done using Lempel-Ziv algorithm. There are two variations of this algorithm: LZ77 (sliding window) and LZ78 (tree-structure). The latter one parses a string into substrings, where each substring is the shortest substring not seen before. More detail on Lempel-Ziv coding can be found in Chapter 13.4 of the textbook by Cover and Thomas. Below class `LempelZivParser` is an implementation of LZ78.
+
+```{python}
+class LempelZivParser:
+  # Implementation of LZ78 algorithm
+  def __init__(self, string: str):
+    self.string: str = string
+    self.substrings: list[str] = []
+    
+  def parse(self) -> None:
+    n: int = len(self.string)
+    i: int = 0
+    while i < n:
+      j: int = 1
+      while i + j <= n and self.string[i:(i+j)] in self.substrings:
+        j += 1
+      self.substrings.append(self.string[i:(i+j)])
+      i += j
+```
+
+Example string $s = \text{abaabaaaaaab}$ appears throughout the paper of Kieffer and Young.
+
+```{python}
+s = "abaabaaaaaab"
+lz = LempelZivParser(s)
+lz.parse()
+print(lz.substrings)
+```
+
+### Grammar transform
+
+Let $G_x$ be a context-free grammar of a string $x\in \mathbb{X}^*$ parsed by the LZ78 into a list of substrings $\lbrace s_1, s_2, \dots , s_n \rbrace$. We will store $G_x$ as a dictionary where keys are non-terminal symbols from $V$ and values are strings from $(V \cup T)^*$. The algorithm to create $G_x$ is as follows:
+
+-   for each substring $s_i$, $i=1,2, \dots n$:
+
+    -   if $|s_i| = 1$ and $s_i \in T$, then create a production rule $A_i \to s_i$
+
+    -   if $|s_i| > 1$, then
+
+        -   split substring $s_i$ into $s_{\operatorname{prefix}} = s_i [1:(|s_i| - 1)]$, $s_{\operatorname{suffix}} = s_i[|s_i|]$
+
+        -   by construction of LZ78, there already exists a production rule $A_j$ for $s_{\operatorname{prefix}}$, so we create a production rule $A_i \to A_j \ s_{\operatorname{suffix}}$
+
+-   The start symbol $A_0$ expands to the concatenation of all non-terminal symbols in the order they were introduced, i.e. $A_0 \to A_1 \ A_2 \ \cdots \ A_n$.
+
+### Grammar encoder
+
+We encode grammar $G_x$ into a binary string using the following algorithm:
+
+-   count of production rules, $|P|$, encoded with [unary coding](https://en.wikipedia.org/wiki/Unary_coding), i.e. $n \in \mathbb{N}_0$ represented by $n$ $1$'s followed by single $0$
+-   for each production rule $p \in P$:
+    -   index of non-terminal symbol encoded with unary coding
+    -   for each symbol $s$ in the right-hand side of the production rule $p$:
+        -   indicator bit whether $s$ is terminal ($0$) or non-terminal ($1$)
+        -   if $s$ is non-terminal, encode its index with unary coding
+        -   if $s$ is terminal, append its 8-bit ASCII code.
+    -   rule terminator $10$ indicating end of production rule $p$.
+
+From the above, the binary representation of each production rule has the following form:
+
+$$
+\underbrace{(1\cdots1\,0)}_{\text{non-terminal index in unary}}
+\quad
+\prod_{s \in \mathrm{RHS}(p)} \Bigl[
+  \underbrace{0}_{\text{terminal indicator}} 
+  + \underbrace{\text{(8-bit ASCII of }s)}_{\text{if terminal}}
+  \quad\text{or}\quad
+  \underbrace{1}_{\text{non-terminal indicator}}
+  + \underbrace{(1\cdots1\,0)}_{\text{non-terminal index in unary}}
+\Bigr]
+\quad
+10.
+$$
+
+```{python}
+class GrammarEncoder:
+  """
+  A class for building and encoding a grammar from a list of substrings. Each substring is transformed into production rules. References to repeated substrings are replaced with non-terminal symbols. Finally, the grammar can be encoded into a prefix-free binary string.
+  """
+  def __init__(self, substrings: list[str]):
+    self.substrings: list[str] = substrings
+
+    # A dictionary to store the grammar rules, mapping a non-terminal symbol (e.g., "A1") to a list of right-hand side symbols (terminals or non-terminals).
+    self.grammar: dict[str, list[str]] = {}
+
+    # A string that will hold the final binary encoding of the grammar.
+    self.binary: str = ""
+
+    # A dictionary used to keep track of prefix-to-non-terminal mappings. For example, if "ab" has been encoded as "A2", then prefixes["ab"] = "A2".
+    # TBD: Can it be done without separate dictionary?
+    self.prefixes: dict[str, str] = {}
+     
+  def build_grammar(self) -> None:
+    """
+    Build the grammar rules based on the provided substrings.
+
+    For each substring:
+        - If the substring is a single character, it is treated as a terminal and assigned a new non-terminal symbol, e.g. A1 -> 'a'.
+        - If the substring has multiple characters, split it into the prefix (all but the last character) and the last character. The prefix itself should already be assigned a non-terminal symbol; the new rule thus references that non-terminal and the final character, e.g. A2 -> A1 'b'.
+
+    Finally, create a start symbol A0 that references all created non-terminals, and move it to the front of the grammar dictionary.
+    """
+    # Iterate through each substring, assigning a non-terminal symbol.
+    for i, substring in enumerate(self.substrings, start = 1):
+        if len(substring) == 1:
+            # Single terminal character: create a rule like A1 -> 'a'
+            self.grammar[f"A{i}"] = [substring]
+        else:
+            # Multiple-character substring: split into prefix and last char
+            prefix = substring[:-1]
+            last_char = substring[-1]
+            # The prefix must already have an associated non-terminal
+            self.grammar[f"A{i}"] = [self.prefixes[prefix], last_char]
+
+        # Store the mapping from the full substring to the new non-terminal
+        self.prefixes[substring] = f"A{i}"
+    
+    # The start symbol references all created non-terminals (A1, A2, etc.)
+    n = len(self.substrings)
+    self.grammar["A0"] = [f"A{i}" for i in range(1, n + 1)]
+    
+    # Move the start symbol A0 to the beginning of the dictionary.
+    start_symbol = self.grammar.pop("A0")
+    self.grammar = {"A0": start_symbol, **self.grammar}
+  
+  def encode(self) -> None:
+    """
+    Encode the grammar into a prefix-free binary string.
+    
+    Encoding format:
+        1. Number of rules in unary (e.g., for N rules, '1'*N + '0').
+        2. For each rule of the form A -> α:
+            - Encode A's index in unary (e.g., A3 -> '1110').
+            - For each symbol in α:
+                * Output '0' followed by 8-bit ASCII if it's a terminal.
+                * Output '1' followed by the non-terminal index in unary if it's a non-terminal.
+            - Terminate each rule with '10' (arbitrary separator).
+
+    Example of a single symbol encoding:
+        - Terminal 'a' -> '0' + ASCII('a').
+        - Non-terminal A4 -> '1' + '11110'.
+    """
+    # Number of rules in unary code.
+    num_rules = len(self.grammar)
+    self.binary += "1" * num_rules + "0"
+
+    # Encode each grammar rule (key -> value).
+    for key, value in self.grammar.items():
+      # Encode the non-terminal (e.g., A3 -> '1110').
+      self.binary += "1" * int(key[1:]) + "0"
+
+      # For each symbol on the right-hand side.
+      for symbol in value:
+        if symbol.startswith("A"):
+            # Non-terminal: '1' + unary representation of the symbol index + '0'.
+            self.binary += "1" + ("1" * int(symbol[1:])) + "0"
+        else:
+            # Terminal: '0' + 8-bit ASCII representation of the character.
+            self.binary += "0" + format(ord(symbol), "08b")
+
+      # '10' is used as a separator for the end of each rule.
+      self.binary += "10"
+        
+```
+
+```{python}
+G = GrammarEncoder(lz.substrings)
+G.build_grammar()
+for rule in G.grammar.items():
+    print(rule)
+```
+
+```{python}
+G.encode()
+print(G.binary)
+```
+
+## Character level decoder
+
+```{python}
+class GrammarDecoder:
+  """
+  A class for decoding a grammar from a given prefix-free binary string (the format produced by GrammarEncoder class). The class provides functionality to parse the binary-encoded grammar, store it in a dictionary, and then expand the grammar rules to reconstruct the original string or phrases.
+  """
+  def __init__(self, binary: str):
+    # TBD: add check if its string of 0's and 1's
+    self.binary: str = binary
+
+    # The current reading position in the binary string.
+    self.position: int = 0
+
+    # A dictionary to store the decoded grammar rules, mapping from non-terminal (e.g., "A3") to its right-hand side (a list of terminals or non-terminals).
+    self.grammar: dict[str, str] = {}
+
+    # A placeholder for the final decoded string (if needed).
+    self.string: str = ""
+  
+  def _parse_unary(self) -> int:
+    """
+     Parse a unary number from the current position in the binary data. The unary number is represented by a consecutive run of '1' characters followed by a single '0'. For example, "1110" represents the number 3, and "10" represents 1.
+    """
+    count = 0
+    # Count the consecutive '1's.
+    while self.position < len(self.binary) and self.binary[self.position] == "1":
+      count += 1
+      self.position += 1
+    # Consume the '0' which terminates the unary representation.
+    if self.position < len(self.binary) and self.binary[self.position] == "0":
+      self.position += 1
+    else:
+      raise ValueError("Unary parse error: missing terminating '0'.")
+    return count
+  
+  def _parse_symbol(self):
+    """
+    Parse the next symbol (terminal or non-terminal) from the binary data. Returns a string:
+        - If the symbol is a terminal, the corresponding ASCII character.
+        - If the symbol is a non-terminal, the string "A" followed by its index (e.g., "A3").
+    """
+    # Read the indicator bit: '0' for terminal, '1' for non-terminal.
+    indicator = self.binary[self.position]
+    self.position += 1
+
+    if indicator == "0":
+        # Next 8 bits represent the ASCII code of a terminal.
+        if self.position + 8 > len(self.binary):
+          raise ValueError("Terminal parse error: not enough bits for ASCII code.")
+        symbol = self.binary[self.position:(self.position + 8)]
+        self.position += 8
+        return chr(int(symbol, base = 2))
+    elif indicator == "1":
+        # Non-terminal => parse the unary-coded index to get something like "A3".
+        non_terminal_index = self._parse_unary()
+        return f"A{non_terminal_index}"
+
+  def decode(self) -> None:
+    """
+    Decode the grammar from the stored binary data and populate the 'grammar' dictionary.
+
+    The binary format is assumed to be:
+        1. The number of rules, in unary code (e.g., '1110' => 3 rules).
+        2. For each rule:
+            - A non-terminal index in unary code (e.g., A2 => '110').
+            - A sequence of symbols (terminals or non-terminals), each with:
+                * '0' + 8 bits for a terminal's ASCII code, or
+                * '1' + unary code for another non-terminal.
+            - A '10' delimiter ending the rule.
+    """
+    # Parse the number of rules from the unary code.
+    num_rules = self._parse_unary()
+    if num_rules < 1:
+      raise ValueError("Number of rules must be greater that 0.")
+    
+    # Prepare a container for all production rules.
+    production_rules = [None] * num_rules
+
+    # Parse each rule, reading its non-terminal index and right-hand side.
+    for _ in range(num_rules):
+      # Parse the non-terminal index for the rule (e.g. A3).
+      non_terminal_index = self._parse_unary()
+      rhs_symbols = []
+
+      # Keep parsing symbols until encountering '10', which ends the rule.
+      while True:
+        # Check if the next bits are '10' => end of rule.
+        if self.position + 2 <= len(self.binary) and self.binary[self.position:(self.position + 2)] == "10":
+          self.position += 2
+          break
+        # Otherwise, parse the next symbol.
+        rhs_symbols.append(self._parse_symbol())
+
+      # Ensure the non-terminal index is valid.
+      if non_terminal_index >= num_rules:
+        raise ValueError(f"Rule index {non_terminal_index} out of range for num_rules={num_rules}.")
+
+      # Assign the parsed symbols to the corresponding rule index.
+      production_rules[non_terminal_index] = rhs_symbols
+        
+    # Map the rule index to the form "A{index}" in the grammar dictionary.
+    for i, rhs in enumerate(production_rules):
+      self.grammar[f"A{i}"] = rhs
+
+  def expand_non_terminal(self, non_terminal: str):
+      """
+      Recursively expand a given non-terminal symbol by replacing it with its right-hand side symbols, which may themselves be non-terminals or terminals.
+      """
+      # Retrieve the right-hand side of the specified non-terminal.
+      rhs_symbols = self.grammar[non_terminal]
+      string = ""
+
+      # Recursively expand each symbol in the right-hand side.
+      for symbol in rhs_symbols:
+          if symbol.startswith("A"):
+              # If the symbol is a non-terminal, expand it further.
+              string += self.expand_non_terminal(symbol)
+          else:
+              # If the symbol is a terminal, append it directly.
+              string += symbol
+      return string
+```
+
+```{python}
+Gdec = GrammarDecoder(G.binary)
+Gdec.decode()
+
+for rule in Gdec.grammar.items():
+    print(rule)
+```
+
+```{python}
+Gdec.expand_non_terminal("A0")
+```
+
+```{python}
+Gdec.expand_non_terminal("A0") == s
+```
+
+## Thinking exercises
+
+1.  Explain why the *grammar encoder* defined in this script is uniquely decodable.
+2.  Write code for token level compression, e.g. words or subwords.
+3.  How Kieffer-Yang's encoder differs from local encoders?
+
+## References
+
+1.  Kieffer, J. C. & En-Hui Yang. (2000). Grammar-based codes: A new class of universal lossless source codes. *IEEE Transactions on Information Theory*, *46*(3), 737–754. <https://doi.org/10.1109/18.841160>
+2.  Cover, T. M., & Thomas, J. A. (2006). *Elements of Information Theory* (2nd edition). Wiley-Interscience.
