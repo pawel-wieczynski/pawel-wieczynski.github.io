@@ -1,7 +1,7 @@
 ---
 title: "Grammar-based data compression"
 author: "Paweł Wieczyński"
-date: "2024-02-23"
+date: "2025-02-23"
 categories: [grammar, compression, python]
 format:
   html:

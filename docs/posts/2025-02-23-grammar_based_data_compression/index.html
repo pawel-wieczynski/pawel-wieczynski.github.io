@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Paweł Wieczyński">
-<meta name="dcterms.date" content="2024-02-23">
+<meta name="dcterms.date" content="2025-02-23">
 
 <title>Grammar-based data compression – My Blog</title>
 <style>
@@ -220,7 +220,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 23, 2024</p>
+      <p class="date">February 23, 2025</p>
     </div>
   </div>
   
@@ -252,7 +252,7 @@ window.Quarto = {
 <section id="lempel-ziv-parser" class="level3">
 <h3 class="anchored" data-anchor-id="lempel-ziv-parser">Lempel-Ziv parser</h3>
 <p>First, we need to compress original string <span class="math inline">\(x \in \mathbb{X}^*\)</span> into a list of substrings. This can be done using Lempel-Ziv algorithm. There are two variations of this algorithm: LZ77 (sliding window) and LZ78 (tree-structure). The latter one parses a string into substrings, where each substring is the shortest substring not seen before. More detail on Lempel-Ziv coding can be found in Chapter 13.4 of the textbook by Cover and Thomas. Below class <code>LempelZivParser</code> is an implementation of LZ78.</p>
-<div id="18145cff" class="cell" data-execution_count="1">
+<div id="cdb2e40e" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LempelZivParser:</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Implementation of LZ78 algorithm</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, string: <span class="bu">str</span>):</span>
@@ -270,7 +270,7 @@ window.Quarto = {
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      i <span class="op">+=</span> j</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Example string <span class="math inline">\(s = \text{abaabaaaaaab}\)</span> appears throughout the paper of Kieffer and Young.</p>
-<div id="892b7cd1" class="cell" data-execution_count="2">
+<div id="e297ef0a" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> <span class="st">"abaabaaaaaab"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>lz <span class="op">=</span> LempelZivParser(s)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>lz.parse()</span>
@@ -327,7 +327,7 @@ window.Quarto = {
 \quad
 10.
 \]</span></p>
-<div id="1b86cb2e" class="cell" data-execution_count="3">
+<div id="7e4f7626" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GrammarEncoder:</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">  A class for building and encoding a grammar from a list of substrings. Each substring is transformed into production rules. References to repeated substrings are replaced with non-terminal symbols. Finally, the grammar can be encoded into a prefix-free binary string.</span></span>
@@ -416,7 +416,7 @@ window.Quarto = {
 <span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>      <span class="co"># '10' is used as a separator for the end of each rule.</span></span>
 <span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"10"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="2c220d36" class="cell" data-execution_count="4">
+<div id="f53fde86" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> GrammarEncoder(lz.substrings)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>G.build_grammar()</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rule <span class="kw">in</span> G.grammar.items():</span>
@@ -431,7 +431,7 @@ window.Quarto = {
 ('A6', ['A3', 'b'])</code></pre>
 </div>
 </div>
-<div id="550f8cf7" class="cell" data-execution_count="5">
+<div id="022acbfd" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>G.encode()</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G.binary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -442,7 +442,7 @@ window.Quarto = {
 </section>
 <section id="character-level-decoder" class="level2">
 <h2 class="anchored" data-anchor-id="character-level-decoder">Character level decoder</h2>
-<div id="57d3eecf" class="cell" data-execution_count="6">
+<div id="56182ac4" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GrammarDecoder:</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">  A class for decoding a grammar from a given prefix-free binary string (the format produced by GrammarEncoder class). The class provides functionality to parse the binary-encoded grammar, store it in a dictionary, and then expand the grammar rules to reconstruct the original string or phrases.</span></span>
@@ -563,7 +563,7 @@ window.Quarto = {
 <span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>              string <span class="op">+=</span> symbol</span>
 <span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="6b205b03" class="cell" data-execution_count="7">
+<div id="4262fb86" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Gdec <span class="op">=</span> GrammarDecoder(G.binary)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Gdec.decode()</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -579,13 +579,13 @@ window.Quarto = {
 ('A6', ['A3', 'b'])</code></pre>
 </div>
 </div>
-<div id="74429d01" class="cell" data-execution_count="8">
+<div id="4677a204" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>Gdec.expand_non_terminal(<span class="st">"A0"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>'abaabaaaaaab'</code></pre>
 </div>
 </div>
-<div id="0fbec11b" class="cell" data-execution_count="9">
+<div id="185e5721" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Gdec.expand_non_terminal(<span class="st">"A0"</span>) <span class="op">==</span> s</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>True</code></pre>

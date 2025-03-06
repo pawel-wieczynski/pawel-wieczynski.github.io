@@ -1,8 +1,8 @@
 ---
 title: "Word2Vec skip-gram from scratch in R"
 author: "Paweł Wieczyński"
-date: "2024-02-07"
-categories: [NLP, torch]
+date: "2025-02-07"
+categories: [NLP, torch, R]
 format:
   html:
     toc: true
