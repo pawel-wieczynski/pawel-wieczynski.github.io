@@ -2,6 +2,7 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/posts/2025-03-06-guassian_process_regression/index.html",
       "/posts/2025-02-23-grammar_based_data_compression/index.html",
       "/posts/2025-02-07-skip_gram_from_scratch/index.html",
       "/posts/2025-02-07-test_document/index.html"

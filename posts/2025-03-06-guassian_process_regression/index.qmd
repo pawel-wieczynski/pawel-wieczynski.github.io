@@ -1,0 +1,264 @@
+---
+title: "Gaussian Process Regression"
+author: "Paweł Wieczyński"
+date: "2025-03-06"
+categories: [gaussian process, regression, python, torch, Bayesian]
+format:
+  html:
+    toc: true
+---
+
+# Introduction
+
+In most machine learning algorithms we are eventually predicting a number, either a real-valued output in a regression setting or a class membership probability in a classification setting. Gaussian Processes (GP's), on the other hand, allows us to predict a distribution which gives us eventually not only an output value but also quantifies uncertainty related to that number.
+
+Another advantage is that GP's work well with variable length strings, which in particular can be useful in natural language processing (NLP).
+
+In this blog post we will explore Gaussian Process Regression (GPR). First we will introduce a bit of theoretical background followed by an implementation of GPR from scratch. This part is based on chapter 2 from Rasmussen's textbook.
+
+One drawback is that GPR requires inverting kernel matrix which takes $\mathcal{O}(n^3)$ time, where $n$ is the number of training samples. To partially overcome that, we will explore GPU-accelerated framework for GP's `GPyTorch`. Another approach for scalable GP's are *sparse Gaussian processes*, which are out-of-scope of this article, but I wish to explore it in the future.
+
+# Theoretical background
+
+We begin with standard supervised learning setup:
+
+-   $X$ is a $n \times d$ matrix of training inputs sampled from $\mathcal{X} = \mathbb{R}^d$
+
+-   $\mathbf{y}$ is a $n \times 1$ vector of training targets sampled from $\mathcal{Y} = \mathbb{R}$
+
+-   $X^*$ is a $m \times d$ matrix of test inputs sampled from $\mathcal{X} = \mathbb{R}^d$
+
+We also assume that $y = f(\mathbf{x}) + \epsilon$, where $\epsilon \sim \mathcal{N} (0, \sigma^2_\epsilon)$. For each $\mathbf{x} \in \mathbb{R}^d$ we assign a random variable $f(\mathbf{x})$ such that for every $s \in \mathbb{N}$ joint probability $p(f(\mathbf{x}_1), f(\mathbf{x}_2), \dots f(\mathbf{x}_s))$ has a multivariate normal distribution, i.e.
+
+$$ p(\mathbf{f} | X ) \sim \mathcal{N}(\mathbf{\mu}, K) $$
+
+where $\mathbf{f} = (f(\mathbf{x}_1), f(\mathbf{x}_2), \dots f(\mathbf{x}_s))$, $\mathbf{\mu} = (\mu(\mathbf{x}_1), \mu(\mathbf{x}_2), \dots \mu(\mathbf{x}_s))$ and $K$ is covariance matrix determined by a kernel function $k(\cdot, \cdot)$:
+
+$$ K_{ij} = k(\mathbf{x}_i, \mathbf{x}_j) $$
+
+We call $f(\mathbf{x})$ a **Gaussian Process** and denote $f(\mathbf{x}) \sim \mathcal{GP} (\mu, K)$.
+
+By evaluating kernel function on training training inputs and test inputs we get matrices of pairwise similarities: $K = K(X, X)$, $K^* = K(X, X^*) = K(X^*, X)^\top$ and $K^{**} = K(X^*, X^*)$. Our noisy training targests have the distribution
+
+$$ p (\mathbf{y} | X) \sim \mathcal{N}(\mu, K + \sigma^2_\epsilon I) $$
+
+Joint distribution of observed (noisy) training targets and unobserved test (noise-free) targets is:
+
+$$ \begin{bmatrix} \mathbf{y} \\ \mathbf{f}^* \end{bmatrix} \sim \mathcal{N} \left( \begin{bmatrix} \mu(X) \\ \mu(X^*) \end{bmatrix}, \begin{bmatrix} K + \sigma^2_\epsilon I & K^* \\ (K^*)^\top & K^{**} \end{bmatrix} \right) $$
+
+For simplicity we will assume zero mean $\mu(X) = \mu(X^*) = 0$. This is our *prior distribution* in Bayesian terminology. Conditioning $\mathbf{f}^*$ on observed data and test inputs we get our *posterior distribution*:
+
+$$ \mathbf{f}^* | X, \mathbf{y}, X^* \sim \mathcal{N} \left( (K^*)^\top (K + \sigma^2_\epsilon I)^{-1} \mathbf{y}, K^{**} - (K^*)^\top (K + \sigma^2_\epsilon I)^{-1} K^* \right) $$
+
+## Hyperparameters
+
+In this blog post we will use radial-basis function (RBF) as a kernel, given by:
+
+$$ k(\mathbf{x}, \mathbf{x}^\prime) = \sigma^2 \exp \left( - \frac{||\mathbf{x} - \mathbf{x}^\prime ||^2}{2 \mathcal{l} ^2} \right) $$
+
+In this setup we have 3 hyperparameters: $\theta = (\sigma^2, \mathcal{l} , \sigma^2_\epsilon)$ to be optimized. We achieve this by minimizing *negative log marginal likelihood*:
+
+$$ -\log p_f(\mathbf{y} | X, \theta) = -\log \left( \int p(\mathbf{y} | f(X)) p(f(X)|X, \theta) df \right) $$
+
+When both $p(\mathbf{y} | f(X))$ and $p(f(X)|X, \theta)$ are Gaussians, then the above formula has a closed-form solution.
+
+# GPR from scratch
+
+## Toy dataset
+
+```{python}
+import numpy as np
+import torch
+import gpytorch
+import matplotlib.pyplot as plt
+```
+
+Let us assume that true underlying function is given by:
+
+$$
+f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
+$$
+
+Our training outcomes $y_i$ are sampled from $f$ with noise $\epsilon \sim \mathcal{N} (0, 0.05)$. In below example we have $n=10$ training data points.
+
+```{python}
+x_max = 2*np.pi
+def true_function(x):
+  return np.cos(2*x) + 0.5*x
+
+x = np.linspace(0, x_max, 1000)
+y = true_function(x)
+
+np.random.seed(2136)
+train_x = np.random.rand(10) * x_max
+train_y = true_function(train_x) + np.random.randn(train_x.shape[0]) * np.sqrt(0.05)
+
+plt.figure()
+plt.plot(x, y, label = "True function")
+plt.scatter(train_x, train_y, c = "#ff7f0e", label = "Training points")
+plt.legend()
+plt.show()
+```
+
+## `GPR` class implementation
+
+In below definition of RBF kernel we assume for simplicity that $\sigma^2 = 1$, $\mathcal{l} = 1 / \sqrt{2}$, $\sigma^2\epsilon = 0$. Later we will optimize them.
+
+```{python}
+def gaussian_kernel(x1, x2):
+    return np.exp(-(x1 - x2)**2)
+```
+
+We initialize class `GPR` with training samples (optionally we can specify amount of noise $\sigma^2_\epsilon$). During the initialization $K$ and $(K + \sigma^2_\epsilon )^{-1}$ are derived and stored in memory.
+
+Method `predict()` returns mean and variance of a posterior distribution evaluated on a test point $x^*$. Method `make_plots()` creates a plot with true function $f(x)$, training points $(x_i, y_i)_{i=1}^n$ and predictions on test data $(x_j^*, y_j)_{j=1}^m$ with shaded areas for mean predictions $\pm 1- 3$ standard deviations.
+
+```{python}
+class GPR:
+  def __init__(self, x, y, noise = 0):
+    self.x = x
+    self.y = y
+    self.noise = noise
+    # Initialize kernel matrix of training dataset
+    self.K = np.asarray([[gaussian_kernel(x1, x2) for x1 in self.x] for x2 in self.x])
+    self.K_inverse = np.linalg.inv(self.K + self.noise)
+    
+  def predict(self, x_new):
+    k_star = np.array([gaussian_kernel(x1, x_new) for x1 in self.x])
+    f_new = k_star.T @ self.K_inverse @ self.y
+    f_var = gaussian_kernel(x_new, x_new) - k_star.T @ self.K_inverse @ k_star
+    return f_new, f_var
+  
+  def make_plot(self, x_true, y_true, predictions, variances):
+    plt.figure()
+    plt.fill_between(x_true, predictions + 2*np.sqrt(variances), predictions + 3*np.sqrt(variances), color = 'grey', alpha = 0.10)
+    plt.fill_between(x_true, predictions - 2*np.sqrt(variances), predictions - 3*np.sqrt(variances), color = 'grey', alpha = 0.10)
+    plt.fill_between(x_true, predictions + 1*np.sqrt(variances), predictions + 2*np.sqrt(variances), color = 'grey', alpha = 0.30)
+    plt.fill_between(x_true, predictions - 1*np.sqrt(variances), predictions - 2*np.sqrt(variances), color = 'grey', alpha = 0.30)
+    plt.fill_between(x_true, predictions, predictions + np.sqrt(variances), color = 'grey', alpha = 0.50)
+    plt.fill_between(x_true, predictions, predictions - np.sqrt(variances), color = 'grey', alpha = 0.50)
+    plt.plot(x_true, y_true, label = "True function")
+    plt.plot(x_true, predictions, ls = "--", label = "GPR")
+    plt.scatter(self.x, self.y, marker = "D", s = 50, label = "Training points")
+    plt.legend()
+    plt.show()
+```
+
+```{python}
+model = GPR(train_x, train_y)
+predictions = []
+variances = []
+
+for x_ in x:
+  f_new, f_var = model.predict(x_)
+  predictions.append(f_new)
+  variances.append(f_var)
+```
+
+```{python}
+model.make_plot(x, y, predictions, np.sqrt(variances))
+```
+
+As we can see in the above plot, without hyperparameters optimization, GPR doesn't yield good approximation of the true function $f(x)$.
+
+# GPyTorch
+
+Let's see if can we get better fit with optimized hyperparameters. We create class `MyGP` and initialize it by calling constructor of the parent class `ExactGP` (<https://docs.gpytorch.ai/en/v1.12/models.html>). We also initialize mean function of GP as a zero and RBF kernel. Function `RBFKernel()` has learnable parameter $\mathcal{l}$, whereas `ScaleKernel()` is a "*meta-kernel*" which scales another kernel by a learnable constant $\sigma^2$. We also define `forward()` method which returns prior multivariate normal distribution $\mathcal{N} (\mu, K)$.
+
+```{python}
+class MyGP(gpytorch.models.ExactGP):
+    def __init__(self, x, y, likelihood):
+        super().__init__(x, y, likelihood)
+        self.mean = gpytorch.means.ZeroMean()
+        self.kernel = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+    
+    def forward(self, x):
+        x_mean = self.mean(x)
+        x_covariance = self.kernel(x)
+        return gpytorch.distributions.MultivariateNormal(x_mean, x_covariance)
+```
+
+We convert our training data to `torch` tensors and initialize our model with the training data. We also initialize noise model $p (\mathbf{y} | \mathbf{f})$ which has another learnable parameter, $\sigma^2_\epsilon$.
+
+```{python}
+train_x = torch.tensor(train_x)
+train_y = torch.tensor(train_y)
+ll = gpytorch.likelihoods.GaussianLikelihood()
+model2 = MyGP(train_x, train_y, ll)
+```
+
+In `torch`, layers can operate in either *training mode* or *evaluation mode* (more about this behavior: <https://yassin01.medium.com/understanding-the-difference-between-model-eval-and-model-train-in-pytorch-48e3002ee0a2>). Now we switch to the *training mode*.
+
+```{python}
+#| echo: true
+ll.train()
+model2.train()
+```
+
+We define `Adam()` optimizer with learning rate $\eta = 0.1$ and negative log marginal likelihood to be minimized.
+
+```{python}
+optimizer = torch.optim.Adam(model2.parameters(), lr = 0.1)
+mll = gpytorch.mlls.ExactMarginalLogLikelihood(ll, model2)
+```
+
+We run training loop for $350$ epochs.
+
+```{python}
+n_iter = 50
+for i in range(n_iter):
+    optimizer.zero_grad()
+    y_hat = model2(train_x) # Forward pass -> MVN
+    loss = -mll(y_hat, train_y) # Negative log-marginal likelihood
+    loss.backward()
+    optimizer.step()
+    print(f"Iter {i+1}/{n_iter} - Loss: {loss:.3f}")
+```
+
+Below we can see optimized hyperparameters $\theta$.
+
+```{python}
+for i in model2.named_parameters():
+  print(i)
+```
+
+We switch to *evaluation mode*.
+
+```{python}
+#| echo: true
+ll.eval()
+model2.eval()
+```
+
+Finally, we make predictions:
+
+-   `model2(test_x)` returns $\mathbf{f}^*$
+
+-   `ll(model2(test_x)` add noise to $\mathbf{f}^*$, i.e. it returns $\mathbf{y}^*$.
+
+```{python}
+with torch.no_grad(), gpytorch.settings.fast_pred_var():
+    test_x = torch.tensor(x)
+    observed = ll(model2(test_x))
+```
+
+```{python}
+f_star = observed.mean.numpy()
+f_variance = observed.stddev.numpy()
+```
+
+```{python}
+model.make_plot(x, y, f_star, f_variance)
+```
+
+Now, after hyperparameters optimization, we have much better fit.
+
+# References
+
+1.  Rasmussen, C. E., & Williams, C. K. I. (2006). *Gaussian Processes for Machine Learning*. MIT Press.
+
+2.  Wang, J. (2023). An Intuitive Tutorial to Gaussian Process Regression. *Computing in Science & Engineering*, *25*(4), 4–11. <https://doi.org/10.1109/MCSE.2023.3342149>
+
+3.  Mutual Information (2021). *Gaussian Processes* \[Video recording\]. <https://www.youtube.com/watch?v=UBDgSHPxVME>
+
+4.  Gardner, J. R., Pleiss, G., Bindel, D., Weinberger, K. Q., & Wilson, A. G. (2021). *GPyTorch: Blackbox Matrix-Matrix Gaussian Process Inference with GPU Acceleration* (No. arXiv:1809.11165). arXiv. <https://doi.org/10.48550/arXiv.1809.11165>
