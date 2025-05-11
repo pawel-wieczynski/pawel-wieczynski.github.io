@@ -267,7 +267,7 @@ We will create system prompt to guide behaviour of the LLMs. Without it, for ins
 system_prompt = "Please ONLY the answer to the prompt. Do not include any other text."
 ```
 
-### Generating texts with local models (ollama)
+### Generating texts with local models
 
 Ollama allows us to run open-source models locally. This is particularly useful for:
 - Preserving privacy by keeping generated data local
@@ -276,8 +276,7 @@ Ollama allows us to run open-source models locally. This is particularly useful 
 
 For this example, we'll use [gemma3 (1B parameter version)]((https://ollama.com/library/gemma3:1b)), a recent lightweight model from Google.
 
-```{python}
-#| vscode: {languageId: powershell}
+```{bash}
 # Start the Ollama model
 ollama run gemma3:1b
 ```
@@ -289,8 +288,7 @@ for i in range(1):
     generate_and_store_texts(ollama_model, prompts, system_prompt)
 ```
 
-```{python}
-#| vscode: {languageId: powershell}
+```{bash}
 # Stop the Ollama
 ollama stop gemma3:1b
 ```

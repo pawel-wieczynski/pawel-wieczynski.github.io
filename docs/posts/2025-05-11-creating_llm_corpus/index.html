@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#building-a-text-generation-framework" id="toc-building-a-text-generation-framework" class="nav-link" data-scroll-target="#building-a-text-generation-framework">Building a text generation framework</a></li>
   <li><a href="#corpus-generation-process" id="toc-corpus-generation-process" class="nav-link" data-scroll-target="#corpus-generation-process">Corpus generation process</a>
   <ul>
-  <li><a href="#generating-texts-with-local-models-ollama" id="toc-generating-texts-with-local-models-ollama" class="nav-link" data-scroll-target="#generating-texts-with-local-models-ollama">Generating texts with local models (ollama)</a></li>
+  <li><a href="#generating-texts-with-local-models" id="toc-generating-texts-with-local-models" class="nav-link" data-scroll-target="#generating-texts-with-local-models">Generating texts with local models</a></li>
   <li><a href="#generating-texts-via-api" id="toc-generating-texts-via-api" class="nav-link" data-scroll-target="#generating-texts-via-api">Generating texts via API</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -217,7 +217,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Show variations in statistical properties based on model architecture, temperature settings, tokenization methods, and other factors</li>
 </ul>
 <p>In this blog post, we’ll create a methodology for building a corpus of LLM-generated texts, which will serve as the foundation for future statistical analyses.</p>
-<div id="67336190" class="cell" data-execution_count="1">
+<div id="03ae819d" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ollama</span>
@@ -236,7 +236,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Be stored in a way that facilitates easy retrieval and analysis</li>
 </ol>
 <p>We’ll use SQLite to store our corpus, as it provides a lightweight database solution that doesn’t require a separate server.</p>
-<div id="48292cea" class="cell" data-execution_count="2">
+<div id="52d3ad9a" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Connect to SQLite database (will be created if the file doesn't exist)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> sqlite3.<span class="ex">connect</span>(<span class="st">'llm_corpus.db'</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>cursor <span class="op">=</span> conn.cursor()</span>
@@ -290,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Write a long story about a detective solving a mystery in a futuristic city.</li>
 </ol>
 <p>These prompts cover various genres (fiction, non-fiction, educational), formats (stories, essays, dialogues, poems), and topics, providing a good foundation for our corpus.</p>
-<div id="066cfc50" class="cell" data-execution_count="3">
+<div id="87b79e57" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import prompts from CSV file and store them in the database</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> store_prompt(prompt):</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Store a single prompt in the database and return its ID"""</span></span>
@@ -311,7 +311,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="building-a-text-generation-framework">Building a text generation framework</h2>
 <p>To systematically collect texts from different LLMs, we need a unified interface that can work with multiple model providers. We’ll create a <code>TextGenerator</code> class that abstracts away the differences between model APIs and provides consistent functionality.</p>
 <p>Our framework needs to: 1. Support multiple LLM providers (Ollama, OpenAI, etc.) 2. Allow customization of generation parameters (temperature, system prompts) 3. Provide a consistent interface for text generation 4. Handle API-specific requirements and error cases</p>
-<div id="25779116" class="cell" data-execution_count="4">
+<div id="595582e2" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TextGenerator:</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A class to generate text using various LLM providers with a unified interface.</span></span>
@@ -384,7 +384,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
 <span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Unsupported provider: </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>provider<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="63b3bccc" class="cell" data-execution_count="5">
+<div id="ea52b426" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_and_store_texts(generator, prompts<span class="op">=</span><span class="va">None</span>, system_prompt<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate texts for all prompts using the provided text generator and store them in the database</span></span>
@@ -433,40 +433,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="corpus-generation-process" class="level2">
 <h2 class="anchored" data-anchor-id="corpus-generation-process">Corpus generation process</h2>
 <p>Now that we have our database schema and text generation framework in place, we can start building our corpus. We’ll generate texts using different models and store them in our database for later analysis.</p>
-<div id="d58aad5a" class="cell" data-execution_count="6">
+<div id="c62472ca" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve all prompts from the database</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cursor.execute(<span class="st">'SELECT * FROM prompts'</span>)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>prompts <span class="op">=</span> cursor.fetchall()</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Retrieved </span><span class="sc">{</span><span class="bu">len</span>(prompts)<span class="sc">}</span><span class="ss"> prompts from the database."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will create system prompt to guide behaviour of the LLMs. Without it, for instance every answer from <em>gemma3</em> model begins like <em>“Okay, here’s a short story about…”</em>.</p>
-<div id="445e5d87" class="cell" data-execution_count="7">
+<div id="64bef78d" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>system_prompt <span class="op">=</span> <span class="st">"Please ONLY the answer to the prompt. Do not include any other text."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="generating-texts-with-local-models-ollama" class="level3">
-<h3 class="anchored" data-anchor-id="generating-texts-with-local-models-ollama">Generating texts with local models (ollama)</h3>
+<section id="generating-texts-with-local-models" class="level3">
+<h3 class="anchored" data-anchor-id="generating-texts-with-local-models">Generating texts with local models</h3>
 <p>Ollama allows us to run open-source models locally. This is particularly useful for: - Preserving privacy by keeping generated data local - Avoiding API costs associated with cloud-based solutions - Testing smaller or specialized models not available via API services</p>
 <p>For this example, we’ll use <a href="(https://ollama.com/library/gemma3:1b)">gemma3 (1B parameter version)</a>, a recent lightweight model from Google.</p>
-<div id="facf2a0b" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Start the Ollama model</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ollama run gemma3:<span class="dv">1</span><span class="er">b</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="84bc39a8" class="cell" data-execution_count="9">
+<pre class="{bash}"><code># Start the Ollama model
+ollama run gemma3:1b</code></pre>
+<div id="51fa4213" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ollama_model <span class="op">=</span> TextGenerator(model_name<span class="op">=</span><span class="st">"gemma3:1b"</span>, provider<span class="op">=</span><span class="st">"ollama"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>):</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    generate_and_store_texts(ollama_model, prompts, system_prompt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="141f305a" class="cell" data-vscode="{&quot;languageId&quot;:&quot;powershell&quot;}" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stop the Ollama</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ollama stop gemma3:<span class="dv">1</span><span class="er">b</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<pre class="{bash}"><code># Stop the Ollama
+ollama stop gemma3:1b</code></pre>
 </section>
 <section id="generating-texts-via-api" class="level3">
 <h3 class="anchored" data-anchor-id="generating-texts-via-api">Generating texts via API</h3>
 <p>Cloud-based models like those from OpenAI often provide state-of-the-art capabilities but require API access. Using these models allows us to: - Test cutting-edge models with greater capabilities - Compare commercial models with open-source alternatives - Examine differences between model families and architectures</p>
 <p>For our cloud-based generation, we’ll use <em>GPT-4o mini</em> from OpenAI.</p>
-<div id="9c8d412e" class="cell" data-execution_count="11">
+<div id="ece1c36b" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>openai_model <span class="op">=</span> TextGenerator(model_name<span class="op">=</span><span class="st">"gpt-4o-mini-2024-07-18"</span>, provider<span class="op">=</span><span class="st">"openai"</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>):</span>
