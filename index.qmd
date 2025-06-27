@@ -1,11 +1,50 @@
 ---
-title: "pawel-wieczynski.github.io"
+title: "Paweł Wieczyński"
 ---
 
-This is a Quarto website.
+## About Me
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+Education:
 
-```{r}
-1 + 1
-```
+ - Masters degree in Mathematics, University of Gdańsk, 2020. My thesis was about pricing of stock option using GARCH models.
+
+ - In 2025 I started pursuing PhD in Computer Science. My research focuses on large language models. My supervisor's website is [https://home.ipipan.waw.pl/l.debowski/](https://home.ipipan.waw.pl/l.debowski/).
+
+Professional experience:
+
+ - *Senior Data Scientist* at Nordea Bank, 2025-now.
+
+ - *Senior Change and Process Specialist* at Nordea Bank, 2022-2025. Responsible for automations of credit risk reporting processes.
+
+ - *Owner* at Fabryka Analiz Sp. z.o.o., 2022-now. We offer ad-hoc statistical analyses and data science consulting services. Our webiste is [https://fabrykaanaliz.pl/](https://fabrykaanaliz.pl/).
+
+ - *Finance Business Analyst* at Intel Corporation, 2018-2022. Responsible for automations of accounting and financial processes.
+
+For the most up-to-date information about my work, please visit my [GitHub](https://github.com/pawel-wieczynski) or connect with me on [LinkedIn](https://www.linkedin.com/in/pawel-wieczynski/).
+
+## Papers
+
+- Wieczyński, P.; Dębowski, Ł. *Long-Range Dependence in Word Time Series: The Cosine Correlation of Embeddings*. Entropy, 2025. [https://doi.org/10.3390/e27060613](https://doi.org/10.3390/e27060613)
+
+- Dziedziul, K.; Kryzhevich, S.; Wieczyński, P. *Mercer Large-Scale Kernel Machines from Ridge Function Perspective*. 2024. [https://arxiv.org/abs/2307.11925](https://arxiv.org/abs/2307.11925)
+
+## Conferences
+
+- *Long-Range Dependence in Word Time Series*. QUALICO 2025, Brno, June 26–28.
+
+- *Optymalizacja prognoz finansowych szeregów czasowych: porównanie dyskretnej transformacji falkowej i modeli LSTM na przykładzie wybranych indeksów giełdowych*. V Konferencja Naukowa z cyklu "Inwestycje alternatywne", 2024, Lublin, October 17-18.
+
+## Teaching
+
+ - *Data Analysis with R*. Uniwersytet WSB Merito Gdańsk, 2023-now. Course materials available on [https://github.com/pawel-wieczynski/Analiza_Danych_R](https://github.com/pawel-wieczynski/Analiza_Danych_R).
+
+  - *Machine Learning with R*. Uniwersytet WSB Merito Gdańsk, 2024-now. Course materials available on [https://github.com/pawel-wieczynski/Uczenie_maszynowe_R](https://github.com/pawel-wieczynski/Uczenie_maszynowe_R).
+
+  - *Statistics with Python*. Uniwersytet WSB Merito Gdańsk, 2025-now. Course materials available on [https://github.com/pawel-wieczynski/Statystyka_WSB](https://github.com/pawel-wieczynski/Statystyka_WSB).
+
+  - *Laboratories on Machine Learning and Neural Networks*. Gdańsk University of Technology, Spring 2024. Course materials available on [https://github.com/pawel-wieczynski/Statystyka_II_PG](https://github.com/pawel-wieczynski/Statystyka_II_PG).
+
+## Certifications
+
+- *AI_devs 3 Agents Reloaded*, issued on June 2025. Certificate available on [https://credsverse.com/credentials/9a11717a-038a-4412-b6e9-1485d1e22f76](https://credsverse.com/credentials/9a11717a-038a-4412-b6e9-1485d1e22f76).
+
