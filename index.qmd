@@ -4,21 +4,21 @@ title: "Paweł Wieczyński"
 
 ## About Me
 
-Education:
-
- - Masters degree in Mathematics, University of Gdańsk, 2020. My thesis was about pricing of stock option using GARCH models.
+### Education
 
  - In 2025 I started pursuing PhD in Computer Science. My research focuses on large language models. My supervisor's website is [https://home.ipipan.waw.pl/l.debowski/](https://home.ipipan.waw.pl/l.debowski/).
 
-Professional experience:
+ - Masters degree in Mathematics, University of Gdańsk, 2020. My thesis was about pricing of stock option using GARCH models.
 
- - *Senior Data Scientist* at Nordea Bank, 2025-now.
+### Professional experience
 
- - *Senior Change and Process Specialist* at Nordea Bank, 2022-2025. Responsible for automations of credit risk reporting processes.
+ - Senior Data Scientist at Nordea Bank, 2025-now.
 
- - *Owner* at Fabryka Analiz Sp. z.o.o., 2022-now. We offer ad-hoc statistical analyses and data science consulting services. Our webiste is [https://fabrykaanaliz.pl/](https://fabrykaanaliz.pl/).
+ - Senior Change and Process Specialist at Nordea Bank, 2022-2025. Responsible for automations of credit risk reporting processes.
 
- - *Finance Business Analyst* at Intel Corporation, 2018-2022. Responsible for automations of accounting and financial processes.
+ - Owner at Fabryka Analiz Sp. z.o.o., 2022-now. We offer ad-hoc statistical analyses and data science consulting services. Our webiste is [https://fabrykaanaliz.pl/](https://fabrykaanaliz.pl/).
+
+ - Finance Business Analyst at Intel Corporation, 2018-2022. Responsible for automations of accounting and financial processes.
 
 For the most up-to-date information about my work, please visit my [GitHub](https://github.com/pawel-wieczynski) or connect with me on [LinkedIn](https://www.linkedin.com/in/pawel-wieczynski/).
 
