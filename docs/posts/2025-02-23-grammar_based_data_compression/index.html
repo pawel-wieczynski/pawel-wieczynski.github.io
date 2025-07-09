@@ -157,12 +157,25 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../../posts.html"> 
 <span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="mailto:wieczynskipawel@gmail.com"> <i class="bi bi-envelope" role="img">
+</i> 
+<span class="menu-text">Email</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.linkedin.com/in/pawel-wieczynski/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text">LinkedIn</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/pawel-wieczynski"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -252,7 +265,7 @@ window.Quarto = {
 <section id="lempel-ziv-parser" class="level3">
 <h3 class="anchored" data-anchor-id="lempel-ziv-parser">Lempel-Ziv parser</h3>
 <p>First, we need to compress original string <span class="math inline">\(x \in \mathbb{X}^*\)</span> into a list of substrings. This can be done using Lempel-Ziv algorithm. There are two variations of this algorithm: LZ77 (sliding window) and LZ78 (tree-structure). The latter one parses a string into substrings, where each substring is the shortest substring not seen before. More detail on Lempel-Ziv coding can be found in Chapter 13.4 of the textbook by Cover and Thomas. Below class <code>LempelZivParser</code> is an implementation of LZ78.</p>
-<div id="6738d5a0" class="cell" data-execution_count="1">
+<div id="09f71328" class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LempelZivParser:</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Implementation of LZ78 algorithm</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, string: <span class="bu">str</span>):</span>
@@ -270,14 +283,11 @@ window.Quarto = {
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      i <span class="op">+=</span> j</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Example string <span class="math inline">\(s = \text{abaabaaaaaab}\)</span> appears throughout the paper of Kieffer and Young.</p>
-<div id="a2bbdb6d" class="cell" data-execution_count="2">
+<div id="e85f1543" class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> <span class="st">"abaabaaaaaab"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>lz <span class="op">=</span> LempelZivParser(s)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>lz.parse()</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lz.substrings)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>['a', 'b', 'aa', 'ba', 'aaa', 'aab']</code></pre>
-</div>
 </div>
 </section>
 <section id="grammar-transform" class="level3">
@@ -327,269 +337,242 @@ window.Quarto = {
 \quad
 10.
 \]</span></p>
-<div id="4dcf2d0a" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GrammarEncoder:</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">  A class for building and encoding a grammar from a list of substrings. Each substring is transformed into production rules. References to repeated substrings are replaced with non-terminal symbols. Finally, the grammar can be encoded into a prefix-free binary string.</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">  """</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, substrings: <span class="bu">list</span>[<span class="bu">str</span>]):</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.substrings: <span class="bu">list</span>[<span class="bu">str</span>] <span class="op">=</span> substrings</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A dictionary to store the grammar rules, mapping a non-terminal symbol (e.g., "A1") to a list of right-hand side symbols (terminals or non-terminals).</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">list</span>[<span class="bu">str</span>]] <span class="op">=</span> {}</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A string that will hold the final binary encoding of the grammar.</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.binary: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A dictionary used to keep track of prefix-to-non-terminal mappings. For example, if "ab" has been encoded as "A2", then prefixes["ab"] = "A2".</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TBD</span><span class="co">: Can it be done without separate dictionary?</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.prefixes: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>] <span class="op">=</span> {}</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>     </span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> build_grammar(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">    Build the grammar rules based on the provided substrings.</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">    For each substring:</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the substring is a single character, it is treated as a terminal and assigned a new non-terminal symbol, e.g. A1 -&gt; 'a'.</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the substring has multiple characters, split it into the prefix (all but the last character) and the last character. The prefix itself should already be assigned a non-terminal symbol; the new rule thus references that non-terminal and the final character, e.g. A2 -&gt; A1 'b'.</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co">    Finally, create a start symbol A0 that references all created non-terminals, and move it to the front of the grammar dictionary.</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through each substring, assigning a non-terminal symbol.</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, substring <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.substrings, start <span class="op">=</span> <span class="dv">1</span>):</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(substring) <span class="op">==</span> <span class="dv">1</span>:</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Single terminal character: create a rule like A1 -&gt; 'a'</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.grammar[<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> [substring]</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Multiple-character substring: split into prefix and last char</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>            prefix <span class="op">=</span> substring[:<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>            last_char <span class="op">=</span> substring[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>            <span class="co"># The prefix must already have an associated non-terminal</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.grammar[<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> [<span class="va">self</span>.prefixes[prefix], last_char]</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Store the mapping from the full substring to the new non-terminal</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.prefixes[substring] <span class="op">=</span> <span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The start symbol references all created non-terminals (A1, A2, etc.)</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="bu">len</span>(<span class="va">self</span>.substrings)</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar[<span class="st">"A0"</span>] <span class="op">=</span> [<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, n <span class="op">+</span> <span class="dv">1</span>)]</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Move the start symbol A0 to the beginning of the dictionary.</span></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    start_symbol <span class="op">=</span> <span class="va">self</span>.grammar.pop(<span class="st">"A0"</span>)</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar <span class="op">=</span> {<span class="st">"A0"</span>: start_symbol, <span class="op">**</span><span class="va">self</span>.grammar}</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> encode(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="co">    Encode the grammar into a prefix-free binary string.</span></span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="co">    Encoding format:</span></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="co">        1. Number of rules in unary (e.g., for N rules, '1'*N + '0').</span></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="co">        2. For each rule of the form A -&gt; α:</span></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="co">            - Encode A's index in unary (e.g., A3 -&gt; '1110').</span></span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a><span class="co">            - For each symbol in α:</span></span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a><span class="co">                * Output '0' followed by 8-bit ASCII if it's a terminal.</span></span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="co">                * Output '1' followed by the non-terminal index in unary if it's a non-terminal.</span></span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="co">            - Terminate each rule with '10' (arbitrary separator).</span></span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="co">    Example of a single symbol encoding:</span></span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="co">        - Terminal 'a' -&gt; '0' + ASCII('a').</span></span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a><span class="co">        - Non-terminal A4 -&gt; '1' + '11110'.</span></span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Number of rules in unary code.</span></span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>    num_rules <span class="op">=</span> <span class="bu">len</span>(<span class="va">self</span>.grammar)</span>
-<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"1"</span> <span class="op">*</span> num_rules <span class="op">+</span> <span class="st">"0"</span></span>
-<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Encode each grammar rule (key -&gt; value).</span></span>
-<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> key, value <span class="kw">in</span> <span class="va">self</span>.grammar.items():</span>
-<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Encode the non-terminal (e.g., A3 -&gt; '1110').</span></span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"1"</span> <span class="op">*</span> <span class="bu">int</span>(key[<span class="dv">1</span>:]) <span class="op">+</span> <span class="st">"0"</span></span>
-<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>      <span class="co"># For each symbol on the right-hand side.</span></span>
-<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> symbol <span class="kw">in</span> value:</span>
-<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> symbol.startswith(<span class="st">"A"</span>):</span>
-<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Non-terminal: '1' + unary representation of the symbol index + '0'.</span></span>
-<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"1"</span> <span class="op">+</span> (<span class="st">"1"</span> <span class="op">*</span> <span class="bu">int</span>(symbol[<span class="dv">1</span>:])) <span class="op">+</span> <span class="st">"0"</span></span>
-<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Terminal: '0' + 8-bit ASCII representation of the character.</span></span>
-<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"0"</span> <span class="op">+</span> <span class="bu">format</span>(<span class="bu">ord</span>(symbol), <span class="st">"08b"</span>)</span>
-<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>      <span class="co"># '10' is used as a separator for the end of each rule.</span></span>
-<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"10"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="3bed1b64" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GrammarEncoder:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">  A class for building and encoding a grammar from a list of substrings. Each substring is transformed into production rules. References to repeated substrings are replaced with non-terminal symbols. Finally, the grammar can be encoded into a prefix-free binary string.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">  """</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, substrings: <span class="bu">list</span>[<span class="bu">str</span>]):</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.substrings: <span class="bu">list</span>[<span class="bu">str</span>] <span class="op">=</span> substrings</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A dictionary to store the grammar rules, mapping a non-terminal symbol (e.g., "A1") to a list of right-hand side symbols (terminals or non-terminals).</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">list</span>[<span class="bu">str</span>]] <span class="op">=</span> {}</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A string that will hold the final binary encoding of the grammar.</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.binary: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A dictionary used to keep track of prefix-to-non-terminal mappings. For example, if "ab" has been encoded as "A2", then prefixes["ab"] = "A2".</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TBD</span><span class="co">: Can it be done without separate dictionary?</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.prefixes: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>] <span class="op">=</span> {}</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>     </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> build_grammar(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">    Build the grammar rules based on the provided substrings.</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">    For each substring:</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the substring is a single character, it is treated as a terminal and assigned a new non-terminal symbol, e.g. A1 -&gt; 'a'.</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the substring has multiple characters, split it into the prefix (all but the last character) and the last character. The prefix itself should already be assigned a non-terminal symbol; the new rule thus references that non-terminal and the final character, e.g. A2 -&gt; A1 'b'.</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">    Finally, create a start symbol A0 that references all created non-terminals, and move it to the front of the grammar dictionary.</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through each substring, assigning a non-terminal symbol.</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, substring <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.substrings, start <span class="op">=</span> <span class="dv">1</span>):</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(substring) <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Single terminal character: create a rule like A1 -&gt; 'a'</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.grammar[<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> [substring]</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Multiple-character substring: split into prefix and last char</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>            prefix <span class="op">=</span> substring[:<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>            last_char <span class="op">=</span> substring[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>            <span class="co"># The prefix must already have an associated non-terminal</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.grammar[<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> [<span class="va">self</span>.prefixes[prefix], last_char]</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Store the mapping from the full substring to the new non-terminal</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.prefixes[substring] <span class="op">=</span> <span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The start symbol references all created non-terminals (A1, A2, etc.)</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="bu">len</span>(<span class="va">self</span>.substrings)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar[<span class="st">"A0"</span>] <span class="op">=</span> [<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, n <span class="op">+</span> <span class="dv">1</span>)]</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Move the start symbol A0 to the beginning of the dictionary.</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>    start_symbol <span class="op">=</span> <span class="va">self</span>.grammar.pop(<span class="st">"A0"</span>)</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar <span class="op">=</span> {<span class="st">"A0"</span>: start_symbol, <span class="op">**</span><span class="va">self</span>.grammar}</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> encode(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="co">    Encode the grammar into a prefix-free binary string.</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="co">    Encoding format:</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="co">        1. Number of rules in unary (e.g., for N rules, '1'*N + '0').</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="co">        2. For each rule of the form A -&gt; α:</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="co">            - Encode A's index in unary (e.g., A3 -&gt; '1110').</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="co">            - For each symbol in α:</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="co">                * Output '0' followed by 8-bit ASCII if it's a terminal.</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="co">                * Output '1' followed by the non-terminal index in unary if it's a non-terminal.</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="co">            - Terminate each rule with '10' (arbitrary separator).</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="co">    Example of a single symbol encoding:</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="co">        - Terminal 'a' -&gt; '0' + ASCII('a').</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="co">        - Non-terminal A4 -&gt; '1' + '11110'.</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Number of rules in unary code.</span></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    num_rules <span class="op">=</span> <span class="bu">len</span>(<span class="va">self</span>.grammar)</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"1"</span> <span class="op">*</span> num_rules <span class="op">+</span> <span class="st">"0"</span></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Encode each grammar rule (key -&gt; value).</span></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> key, value <span class="kw">in</span> <span class="va">self</span>.grammar.items():</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Encode the non-terminal (e.g., A3 -&gt; '1110').</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"1"</span> <span class="op">*</span> <span class="bu">int</span>(key[<span class="dv">1</span>:]) <span class="op">+</span> <span class="st">"0"</span></span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>      <span class="co"># For each symbol on the right-hand side.</span></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> symbol <span class="kw">in</span> value:</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> symbol.startswith(<span class="st">"A"</span>):</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Non-terminal: '1' + unary representation of the symbol index + '0'.</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"1"</span> <span class="op">+</span> (<span class="st">"1"</span> <span class="op">*</span> <span class="bu">int</span>(symbol[<span class="dv">1</span>:])) <span class="op">+</span> <span class="st">"0"</span></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Terminal: '0' + 8-bit ASCII representation of the character.</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"0"</span> <span class="op">+</span> <span class="bu">format</span>(<span class="bu">ord</span>(symbol), <span class="st">"08b"</span>)</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>      <span class="co"># '10' is used as a separator for the end of each rule.</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.binary <span class="op">+=</span> <span class="st">"10"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="1b0442ec" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> GrammarEncoder(lz.substrings)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>G.build_grammar()</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rule <span class="kw">in</span> G.grammar.items():</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(rule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>('A0', ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
-('A1', ['a'])
-('A2', ['b'])
-('A3', ['A1', 'a'])
-('A4', ['A2', 'a'])
-('A5', ['A3', 'a'])
-('A6', ['A3', 'b'])</code></pre>
+<div id="5ef11a3a" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> GrammarEncoder(lz.substrings)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>G.build_grammar()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rule <span class="kw">in</span> G.grammar.items():</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(rule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<div id="e4a321a1" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>G.encode()</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G.binary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>1111111001101110111101111101111110111111101010001100001101100011000101011101100011000011011110111000110000110111110111100011000011011111101111000110001010</code></pre>
-</div>
+<div id="4ac72a15" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>G.encode()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G.binary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="character-level-decoder" class="level2">
 <h2 class="anchored" data-anchor-id="character-level-decoder">Character level decoder</h2>
-<div id="6659e424" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GrammarDecoder:</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">  A class for decoding a grammar from a given prefix-free binary string (the format produced by GrammarEncoder class). The class provides functionality to parse the binary-encoded grammar, store it in a dictionary, and then expand the grammar rules to reconstruct the original string or phrases.</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">  """</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, binary: <span class="bu">str</span>):</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TBD</span><span class="co">: add check if its string of 0's and 1's</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.binary: <span class="bu">str</span> <span class="op">=</span> binary</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The current reading position in the binary string.</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.position: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A dictionary to store the decoded grammar rules, mapping from non-terminal (e.g., "A3") to its right-hand side (a list of terminals or non-terminals).</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>] <span class="op">=</span> {}</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A placeholder for the final decoded string (if needed).</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.string: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _parse_unary(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">     Parse a unary number from the current position in the binary data. The unary number is represented by a consecutive run of '1' characters followed by a single '0'. For example, "1110" represents the number 3, and "10" represents 1.</span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count the consecutive '1's.</span></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">self</span>.position <span class="op">&lt;</span> <span class="bu">len</span>(<span class="va">self</span>.binary) <span class="kw">and</span> <span class="va">self</span>.binary[<span class="va">self</span>.position] <span class="op">==</span> <span class="st">"1"</span>:</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>      count <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Consume the '0' which terminates the unary representation.</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.position <span class="op">&lt;</span> <span class="bu">len</span>(<span class="va">self</span>.binary) <span class="kw">and</span> <span class="va">self</span>.binary[<span class="va">self</span>.position] <span class="op">==</span> <span class="st">"0"</span>:</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Unary parse error: missing terminating '0'."</span>)</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> count</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _parse_symbol(<span class="va">self</span>):</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">    Parse the next symbol (terminal or non-terminal) from the binary data. Returns a string:</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the symbol is a terminal, the corresponding ASCII character.</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the symbol is a non-terminal, the string "A" followed by its index (e.g., "A3").</span></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Read the indicator bit: '0' for terminal, '1' for non-terminal.</span></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    indicator <span class="op">=</span> <span class="va">self</span>.binary[<span class="va">self</span>.position]</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> indicator <span class="op">==</span> <span class="st">"0"</span>:</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Next 8 bits represent the ASCII code of a terminal.</span></span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.position <span class="op">+</span> <span class="dv">8</span> <span class="op">&gt;</span> <span class="bu">len</span>(<span class="va">self</span>.binary):</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>          <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Terminal parse error: not enough bits for ASCII code."</span>)</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>        symbol <span class="op">=</span> <span class="va">self</span>.binary[<span class="va">self</span>.position:(<span class="va">self</span>.position <span class="op">+</span> <span class="dv">8</span>)]</span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">8</span></span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">chr</span>(<span class="bu">int</span>(symbol, base <span class="op">=</span> <span class="dv">2</span>))</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> indicator <span class="op">==</span> <span class="st">"1"</span>:</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Non-terminal =&gt; parse the unary-coded index to get something like "A3".</span></span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>        non_terminal_index <span class="op">=</span> <span class="va">self</span>._parse_unary()</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f"A</span><span class="sc">{</span>non_terminal_index<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> decode(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="co">    Decode the grammar from the stored binary data and populate the 'grammar' dictionary.</span></span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="co">    The binary format is assumed to be:</span></span>
-<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="co">        1. The number of rules, in unary code (e.g., '1110' =&gt; 3 rules).</span></span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="co">        2. For each rule:</span></span>
-<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="co">            - A non-terminal index in unary code (e.g., A2 =&gt; '110').</span></span>
-<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a><span class="co">            - A sequence of symbols (terminals or non-terminals), each with:</span></span>
-<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="co">                * '0' + 8 bits for a terminal's ASCII code, or</span></span>
-<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="co">                * '1' + unary code for another non-terminal.</span></span>
-<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="co">            - A '10' delimiter ending the rule.</span></span>
-<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse the number of rules from the unary code.</span></span>
-<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    num_rules <span class="op">=</span> <span class="va">self</span>._parse_unary()</span>
-<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> num_rules <span class="op">&lt;</span> <span class="dv">1</span>:</span>
-<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Number of rules must be greater that 0."</span>)</span>
-<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Prepare a container for all production rules.</span></span>
-<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>    production_rules <span class="op">=</span> [<span class="va">None</span>] <span class="op">*</span> num_rules</span>
-<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse each rule, reading its non-terminal index and right-hand side.</span></span>
-<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_rules):</span>
-<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Parse the non-terminal index for the rule (e.g. A3).</span></span>
-<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>      non_terminal_index <span class="op">=</span> <span class="va">self</span>._parse_unary()</span>
-<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>      rhs_symbols <span class="op">=</span> []</span>
-<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Keep parsing symbols until encountering '10', which ends the rule.</span></span>
-<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>      <span class="cf">while</span> <span class="va">True</span>:</span>
-<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check if the next bits are '10' =&gt; end of rule.</span></span>
-<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.position <span class="op">+</span> <span class="dv">2</span> <span class="op">&lt;=</span> <span class="bu">len</span>(<span class="va">self</span>.binary) <span class="kw">and</span> <span class="va">self</span>.binary[<span class="va">self</span>.position:(<span class="va">self</span>.position <span class="op">+</span> <span class="dv">2</span>)] <span class="op">==</span> <span class="st">"10"</span>:</span>
-<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>          <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">2</span></span>
-<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>          <span class="cf">break</span></span>
-<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Otherwise, parse the next symbol.</span></span>
-<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>        rhs_symbols.append(<span class="va">self</span>._parse_symbol())</span>
-<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Ensure the non-terminal index is valid.</span></span>
-<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> non_terminal_index <span class="op">&gt;=</span> num_rules:</span>
-<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Rule index </span><span class="sc">{</span>non_terminal_index<span class="sc">}</span><span class="ss"> out of range for num_rules=</span><span class="sc">{</span>num_rules<span class="sc">}</span><span class="ss">."</span>)</span>
-<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Assign the parsed symbols to the corresponding rule index.</span></span>
-<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>      production_rules[non_terminal_index] <span class="op">=</span> rhs_symbols</span>
-<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Map the rule index to the form "A{index}" in the grammar dictionary.</span></span>
-<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, rhs <span class="kw">in</span> <span class="bu">enumerate</span>(production_rules):</span>
-<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.grammar[<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rhs</span>
-<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> expand_non_terminal(<span class="va">self</span>, non_terminal: <span class="bu">str</span>):</span>
-<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>      <span class="co">"""</span></span>
-<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a><span class="co">      Recursively expand a given non-terminal symbol by replacing it with its right-hand side symbols, which may themselves be non-terminals or terminals.</span></span>
-<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a><span class="co">      """</span></span>
-<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Retrieve the right-hand side of the specified non-terminal.</span></span>
-<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>      rhs_symbols <span class="op">=</span> <span class="va">self</span>.grammar[non_terminal]</span>
-<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>      string <span class="op">=</span> <span class="st">""</span></span>
-<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Recursively expand each symbol in the right-hand side.</span></span>
-<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> symbol <span class="kw">in</span> rhs_symbols:</span>
-<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> symbol.startswith(<span class="st">"A"</span>):</span>
-<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>              <span class="co"># If the symbol is a non-terminal, expand it further.</span></span>
-<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>              string <span class="op">+=</span> <span class="va">self</span>.expand_non_terminal(symbol)</span>
-<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>          <span class="cf">else</span>:</span>
-<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>              <span class="co"># If the symbol is a terminal, append it directly.</span></span>
-<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>              string <span class="op">+=</span> symbol</span>
-<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="86830849" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GrammarDecoder:</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">  A class for decoding a grammar from a given prefix-free binary string (the format produced by GrammarEncoder class). The class provides functionality to parse the binary-encoded grammar, store it in a dictionary, and then expand the grammar rules to reconstruct the original string or phrases.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">  """</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, binary: <span class="bu">str</span>):</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TBD</span><span class="co">: add check if its string of 0's and 1's</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.binary: <span class="bu">str</span> <span class="op">=</span> binary</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The current reading position in the binary string.</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.position: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A dictionary to store the decoded grammar rules, mapping from non-terminal (e.g., "A3") to its right-hand side (a list of terminals or non-terminals).</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.grammar: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>] <span class="op">=</span> {}</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># A placeholder for the final decoded string (if needed).</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.string: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _parse_unary(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co">     Parse a unary number from the current position in the binary data. The unary number is represented by a consecutive run of '1' characters followed by a single '0'. For example, "1110" represents the number 3, and "10" represents 1.</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    count <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count the consecutive '1's.</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">self</span>.position <span class="op">&lt;</span> <span class="bu">len</span>(<span class="va">self</span>.binary) <span class="kw">and</span> <span class="va">self</span>.binary[<span class="va">self</span>.position] <span class="op">==</span> <span class="st">"1"</span>:</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>      count <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Consume the '0' which terminates the unary representation.</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.position <span class="op">&lt;</span> <span class="bu">len</span>(<span class="va">self</span>.binary) <span class="kw">and</span> <span class="va">self</span>.binary[<span class="va">self</span>.position] <span class="op">==</span> <span class="st">"0"</span>:</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Unary parse error: missing terminating '0'."</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> count</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _parse_symbol(<span class="va">self</span>):</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="co">    Parse the next symbol (terminal or non-terminal) from the binary data. Returns a string:</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the symbol is a terminal, the corresponding ASCII character.</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="co">        - If the symbol is a non-terminal, the string "A" followed by its index (e.g., "A3").</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Read the indicator bit: '0' for terminal, '1' for non-terminal.</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    indicator <span class="op">=</span> <span class="va">self</span>.binary[<span class="va">self</span>.position]</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> indicator <span class="op">==</span> <span class="st">"0"</span>:</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Next 8 bits represent the ASCII code of a terminal.</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.position <span class="op">+</span> <span class="dv">8</span> <span class="op">&gt;</span> <span class="bu">len</span>(<span class="va">self</span>.binary):</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>          <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Terminal parse error: not enough bits for ASCII code."</span>)</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>        symbol <span class="op">=</span> <span class="va">self</span>.binary[<span class="va">self</span>.position:(<span class="va">self</span>.position <span class="op">+</span> <span class="dv">8</span>)]</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">8</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">chr</span>(<span class="bu">int</span>(symbol, base <span class="op">=</span> <span class="dv">2</span>))</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> indicator <span class="op">==</span> <span class="st">"1"</span>:</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Non-terminal =&gt; parse the unary-coded index to get something like "A3".</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>        non_terminal_index <span class="op">=</span> <span class="va">self</span>._parse_unary()</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f"A</span><span class="sc">{</span>non_terminal_index<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> decode(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a><span class="co">    Decode the grammar from the stored binary data and populate the 'grammar' dictionary.</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a><span class="co">    The binary format is assumed to be:</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="co">        1. The number of rules, in unary code (e.g., '1110' =&gt; 3 rules).</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="co">        2. For each rule:</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="co">            - A non-terminal index in unary code (e.g., A2 =&gt; '110').</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a><span class="co">            - A sequence of symbols (terminals or non-terminals), each with:</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a><span class="co">                * '0' + 8 bits for a terminal's ASCII code, or</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a><span class="co">                * '1' + unary code for another non-terminal.</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a><span class="co">            - A '10' delimiter ending the rule.</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse the number of rules from the unary code.</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    num_rules <span class="op">=</span> <span class="va">self</span>._parse_unary()</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> num_rules <span class="op">&lt;</span> <span class="dv">1</span>:</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>      <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Number of rules must be greater that 0."</span>)</span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Prepare a container for all production rules.</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>    production_rules <span class="op">=</span> [<span class="va">None</span>] <span class="op">*</span> num_rules</span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse each rule, reading its non-terminal index and right-hand side.</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_rules):</span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Parse the non-terminal index for the rule (e.g. A3).</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>      non_terminal_index <span class="op">=</span> <span class="va">self</span>._parse_unary()</span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>      rhs_symbols <span class="op">=</span> []</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Keep parsing symbols until encountering '10', which ends the rule.</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>      <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check if the next bits are '10' =&gt; end of rule.</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.position <span class="op">+</span> <span class="dv">2</span> <span class="op">&lt;=</span> <span class="bu">len</span>(<span class="va">self</span>.binary) <span class="kw">and</span> <span class="va">self</span>.binary[<span class="va">self</span>.position:(<span class="va">self</span>.position <span class="op">+</span> <span class="dv">2</span>)] <span class="op">==</span> <span class="st">"10"</span>:</span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>          <span class="va">self</span>.position <span class="op">+=</span> <span class="dv">2</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>          <span class="cf">break</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Otherwise, parse the next symbol.</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>        rhs_symbols.append(<span class="va">self</span>._parse_symbol())</span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Ensure the non-terminal index is valid.</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> non_terminal_index <span class="op">&gt;=</span> num_rules:</span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Rule index </span><span class="sc">{</span>non_terminal_index<span class="sc">}</span><span class="ss"> out of range for num_rules=</span><span class="sc">{</span>num_rules<span class="sc">}</span><span class="ss">."</span>)</span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Assign the parsed symbols to the corresponding rule index.</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>      production_rules[non_terminal_index] <span class="op">=</span> rhs_symbols</span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Map the rule index to the form "A{index}" in the grammar dictionary.</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, rhs <span class="kw">in</span> <span class="bu">enumerate</span>(production_rules):</span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.grammar[<span class="ss">f"A</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rhs</span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> expand_non_terminal(<span class="va">self</span>, non_terminal: <span class="bu">str</span>):</span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a>      <span class="co">"""</span></span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a><span class="co">      Recursively expand a given non-terminal symbol by replacing it with its right-hand side symbols, which may themselves be non-terminals or terminals.</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a><span class="co">      """</span></span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Retrieve the right-hand side of the specified non-terminal.</span></span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a>      rhs_symbols <span class="op">=</span> <span class="va">self</span>.grammar[non_terminal]</span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a>      string <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Recursively expand each symbol in the right-hand side.</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> symbol <span class="kw">in</span> rhs_symbols:</span>
+<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> symbol.startswith(<span class="st">"A"</span>):</span>
+<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a>              <span class="co"># If the symbol is a non-terminal, expand it further.</span></span>
+<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a>              string <span class="op">+=</span> <span class="va">self</span>.expand_non_terminal(symbol)</span>
+<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a>          <span class="cf">else</span>:</span>
+<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a>              <span class="co"># If the symbol is a terminal, append it directly.</span></span>
+<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a>              string <span class="op">+=</span> symbol</span>
+<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="712024fd" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Gdec <span class="op">=</span> GrammarDecoder(G.binary)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Gdec.decode()</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rule <span class="kw">in</span> Gdec.grammar.items():</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(rule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>('A0', ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
-('A1', ['a'])
-('A2', ['b'])
-('A3', ['A1', 'a'])
-('A4', ['A2', 'a'])
-('A5', ['A3', 'a'])
-('A6', ['A3', 'b'])</code></pre>
+<div id="5ad55e9e" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Gdec <span class="op">=</span> GrammarDecoder(G.binary)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Gdec.decode()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rule <span class="kw">in</span> Gdec.grammar.items():</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(rule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div id="ff238833" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Gdec.expand_non_terminal(<span class="st">"A0"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="155d4e1e" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>Gdec.expand_non_terminal(<span class="st">"A0"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
-<pre><code>'abaabaaaaaab'</code></pre>
-</div>
-</div>
-<div id="2129442f" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Gdec.expand_non_terminal(<span class="st">"A0"</span>) <span class="op">==</span> s</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="9">
-<pre><code>True</code></pre>
-</div>
+<div id="9be879e1" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Gdec.expand_non_terminal(<span class="st">"A0"</span>) <span class="op">==</span> s</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="thinking-exercises" class="level2">

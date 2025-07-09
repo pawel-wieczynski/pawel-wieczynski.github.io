@@ -157,12 +157,25 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../../posts.html"> 
 <span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="mailto:wieczynskipawel@gmail.com"> <i class="bi bi-envelope" role="img">
+</i> 
+<span class="menu-text">Email</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.linkedin.com/in/pawel-wieczynski/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text">LinkedIn</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/pawel-wieczynski"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -265,7 +278,7 @@ window.Quarto = {
 <section id="demonstration-with-synthetic-data" class="level3">
 <h3 class="anchored" data-anchor-id="demonstration-with-synthetic-data">Demonstration with Synthetic Data</h3>
 <p>Let’s start with a simple example using synthetic data to understand the algorithm. We’ll generate a random matrix <span class="math inline">\(X\)</span> of dimension <span class="math inline">\(N \times d\)</span>, where <span class="math inline">\(N=800\)</span> represents the number of tokens and <span class="math inline">\(d=100\)</span> is the dimensionality of the embedding space.</p>
-<div id="4904a973" class="cell" data-execution_count="1">
+<div id="5f8f5d84" class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Set random seed for reproducibility</span></span>
@@ -285,7 +298,7 @@ window.Quarto = {
 <p><span class="math display">\[\mathbb{E} \left[ \overline{V} \right] = \frac{1}{N - l} \sum_{i=l+1}^{N} \overline{X}_i = \frac{S_{N} - S_l}{N - l}\]</span></p>
 <p><strong>Step 4</strong>: Compute the expectation of the dot product: <span class="math display">\[\mathbb{E} \left[ \overline{U} \cdot \overline{V} \right] = \frac{1}{N-l} \sum_{i=1}^{N-l} \overline{X_i} \cdot \overline{X}_{i+l}\]</span></p>
 <p>The cosine correlation is then: <span class="math inline">\(\text{CC}(U; V) = \mathbb{E} \left[ \overline{U} \cdot \overline{V} \right] - \mathbb{E} \left[ \overline{U} \right] \cdot \mathbb{E} \left[ \overline{V} \right]\)</span></p>
-<div id="4644a4c3" class="cell" data-execution_count="2">
+<div id="32bdc518" class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Normalize embeddings</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>norms: np.ndarray <span class="op">=</span> np.linalg.norm(X, axis<span class="op">=</span><span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>)  <span class="co"># Shape: (N, 1)</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>norms[norms <span class="op">==</span> <span class="dv">0</span>] <span class="op">=</span> <span class="fl">1.0</span>  <span class="co"># Avoid division by zero</span></span>
@@ -314,105 +327,98 @@ window.Quarto = {
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>coco_value: <span class="bu">float</span> <span class="op">=</span> E_UV <span class="op">-</span> EU_EV</span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Cosine Correlation at lag </span><span class="sc">{</span>l<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>coco_value<span class="sc">:.6f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Lag: 5, E[U·V]: -0.000650, E[U]·E[V]: 0.001172
-Cosine Correlation at lag 5: -0.001823</code></pre>
-</div>
 </div>
 </section>
 <section id="the-lrdestimator-class" class="level3">
 <h3 class="anchored" data-anchor-id="the-lrdestimator-class">The LRDEstimator Class</h3>
 <p>Now let’s encapsulate this algorithm into a class. This is a simplified version for demonstration. Our full implementation on <a href="https://github.com/pawel-wieczynski/long_range_dependencies/blob/main/LRDEstimator.py">GitHub</a> includes support for pooled embeddings and additional optimization techniques used in our research.</p>
-<div id="9df882c5" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LRDEstimator:   </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, vectors: np.ndarray) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.vectors <span class="op">=</span> vectors</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.N, <span class="va">self</span>.d <span class="op">=</span> vectors.shape</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cached normalized embeddings and prefix sums</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._X_normalized: np.ndarray <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._prefix_sums: np.ndarray <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> compute_unpooled(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>._X_normalized <span class="kw">is</span> <span class="va">None</span>:</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Normalize embeddings</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            norms <span class="op">=</span> np.linalg.norm(<span class="va">self</span>.vectors, axis<span class="op">=</span><span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>            norms[norms <span class="op">==</span> <span class="dv">0</span>] <span class="op">=</span> <span class="fl">1.0</span>  <span class="co"># Avoid division by zero</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._X_normalized <span class="op">=</span> <span class="va">self</span>.vectors <span class="op">/</span> norms</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Build prefix sums</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._prefix_sums <span class="op">=</span> np.zeros((<span class="va">self</span>.N <span class="op">+</span> <span class="dv">1</span>, <span class="va">self</span>.d))</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._prefix_sums[<span class="dv">1</span>:] <span class="op">=</span> np.cumsum(<span class="va">self</span>._X_normalized, axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> calculate_coco(<span class="va">self</span>, lag: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> lag <span class="op">&gt;=</span> <span class="va">self</span>.N <span class="kw">or</span> lag <span class="op">&lt;=</span> <span class="dv">0</span>:</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"lag=</span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss"> must be in range (0, </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>N<span class="sc">}</span><span class="ss">)"</span>)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.compute_unpooled()</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        length <span class="op">=</span> <span class="va">self</span>.N <span class="op">-</span> lag</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        U_sum <span class="op">=</span> <span class="va">self</span>._prefix_sums[<span class="va">self</span>.N <span class="op">-</span> lag] <span class="op">-</span> <span class="va">self</span>._prefix_sums[<span class="dv">0</span>]</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        V_sum <span class="op">=</span> <span class="va">self</span>._prefix_sums[<span class="va">self</span>.N] <span class="op">-</span> <span class="va">self</span>._prefix_sums[lag]</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        E_U <span class="op">=</span> U_sum <span class="op">/</span> length</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>        E_V <span class="op">=</span> V_sum <span class="op">/</span> length</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        U <span class="op">=</span> <span class="va">self</span>._X_normalized[:length]</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> <span class="va">self</span>._X_normalized[lag:lag <span class="op">+</span> length]</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        E_UV <span class="op">=</span> np.mean(np.<span class="bu">sum</span>(U <span class="op">*</span> V, axis<span class="op">=</span><span class="dv">1</span>))</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> E_UV <span class="op">-</span> np.dot(E_U, E_V)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="980bde1b" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LRDEstimator:   </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, vectors: np.ndarray) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.vectors <span class="op">=</span> vectors</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.N, <span class="va">self</span>.d <span class="op">=</span> vectors.shape</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cached normalized embeddings and prefix sums</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._X_normalized: np.ndarray <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._prefix_sums: np.ndarray <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> compute_unpooled(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>._X_normalized <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Normalize embeddings</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            norms <span class="op">=</span> np.linalg.norm(<span class="va">self</span>.vectors, axis<span class="op">=</span><span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            norms[norms <span class="op">==</span> <span class="dv">0</span>] <span class="op">=</span> <span class="fl">1.0</span>  <span class="co"># Avoid division by zero</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._X_normalized <span class="op">=</span> <span class="va">self</span>.vectors <span class="op">/</span> norms</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Build prefix sums</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._prefix_sums <span class="op">=</span> np.zeros((<span class="va">self</span>.N <span class="op">+</span> <span class="dv">1</span>, <span class="va">self</span>.d))</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._prefix_sums[<span class="dv">1</span>:] <span class="op">=</span> np.cumsum(<span class="va">self</span>._X_normalized, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> calculate_coco(<span class="va">self</span>, lag: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> lag <span class="op">&gt;=</span> <span class="va">self</span>.N <span class="kw">or</span> lag <span class="op">&lt;=</span> <span class="dv">0</span>:</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"lag=</span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss"> must be in range (0, </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>N<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.compute_unpooled()</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        length <span class="op">=</span> <span class="va">self</span>.N <span class="op">-</span> lag</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>        U_sum <span class="op">=</span> <span class="va">self</span>._prefix_sums[<span class="va">self</span>.N <span class="op">-</span> lag] <span class="op">-</span> <span class="va">self</span>._prefix_sums[<span class="dv">0</span>]</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        V_sum <span class="op">=</span> <span class="va">self</span>._prefix_sums[<span class="va">self</span>.N] <span class="op">-</span> <span class="va">self</span>._prefix_sums[lag]</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        E_U <span class="op">=</span> U_sum <span class="op">/</span> length</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>        E_V <span class="op">=</span> V_sum <span class="op">/</span> length</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>        U <span class="op">=</span> <span class="va">self</span>._X_normalized[:length]</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> <span class="va">self</span>._X_normalized[lag:lag <span class="op">+</span> length]</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>        E_UV <span class="op">=</span> np.mean(np.<span class="bu">sum</span>(U <span class="op">*</span> V, axis<span class="op">=</span><span class="dv">1</span>))</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> E_UV <span class="op">-</span> np.dot(E_U, E_V)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="application-to-human-written-text" class="level2">
 <h2 class="anchored" data-anchor-id="application-to-human-written-text">Application to human-written text</h2>
 <p>We’ll use a text from the <a href="https://www.mdpi.com/1099-4300/22/1/126">Standardized Project Gutenberg Corpus</a> (Gerlach &amp; Font-Closs, 2020). It is <em>Cecilia: A Story of Modern Rome</em> which has more than 100k tokens.</p>
-<div id="b32fd56c" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> List, Tuple</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"data/SGPC/PG31723_tokens.txt"</span>, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    tokens: List[<span class="bu">str</span>] <span class="op">=</span> f.read().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove empty tokens</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> [token <span class="cf">for</span> token <span class="kw">in</span> tokens <span class="cf">if</span> token.strip()]</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
-<pre><code>108546</code></pre>
-</div>
+<div id="2552420c" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> List, Tuple</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"data/SGPC/PG31723_tokens.txt"</span>, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    tokens: List[<span class="bu">str</span>] <span class="op">=</span> f.read().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove empty tokens</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> [token <span class="cf">for</span> token <span class="kw">in</span> tokens <span class="cf">if</span> token.strip()]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We’ll calculate the cosine correlation for lags from 1 to half the length of the text. To gain some efficiency, we’ll be increasing lag by 10% at each step. This will allow us to capture the long-range dependencies without computing every single lag.</p>
-<div id="e03b07fe" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_coco_series(vectors: np.ndarray) <span class="op">-&gt;</span> Tuple[np.ndarray, np.ndarray]:</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    lrd: LRDEstimator <span class="op">=</span> LRDEstimator(vectors)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    max_lag: <span class="bu">int</span> <span class="op">=</span> <span class="bu">int</span>(vectors.shape[<span class="dv">0</span>] <span class="op">/</span> <span class="dv">2</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    current_lag: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    lags: List[<span class="bu">int</span>] <span class="op">=</span> []</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    coco: List[<span class="bu">float</span>] <span class="op">=</span> []</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> current_lag <span class="op">&lt;</span> max_lag:</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        coco_value <span class="op">=</span> lrd.calculate_coco(lag<span class="op">=</span>current_lag)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        coco.append(coco_value)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        lags.append(current_lag)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Increase lag by ~10%</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        current_lag <span class="op">=</span> <span class="bu">int</span>(np.ceil(current_lag <span class="op">*</span> <span class="fl">1.1</span>))</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(lags), np.array(coco)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="5c9b240c" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_coco_series(vectors: np.ndarray) <span class="op">-&gt;</span> Tuple[np.ndarray, np.ndarray]:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    lrd: LRDEstimator <span class="op">=</span> LRDEstimator(vectors)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    max_lag: <span class="bu">int</span> <span class="op">=</span> <span class="bu">int</span>(vectors.shape[<span class="dv">0</span>] <span class="op">/</span> <span class="dv">2</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    current_lag: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    lags: List[<span class="bu">int</span>] <span class="op">=</span> []</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    coco: List[<span class="bu">float</span>] <span class="op">=</span> []</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> current_lag <span class="op">&lt;</span> max_lag:</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        coco_value <span class="op">=</span> lrd.calculate_coco(lag<span class="op">=</span>current_lag)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        coco.append(coco_value)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        lags.append(current_lag)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Increase lag by ~10%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        current_lag <span class="op">=</span> <span class="bu">int</span>(np.ceil(current_lag <span class="op">*</span> <span class="fl">1.1</span>))</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(lags), np.array(coco)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="word2vec-embeddings" class="level3">
 <h3 class="anchored" data-anchor-id="word2vec-embeddings">Word2Vec embeddings</h3>
 <p>Word2vec, introduced by Mikolov et al.&nbsp;in 2013, learns word representations by predicting context words (Skip-gram) or target words from context (CBOW). These are <strong>static embeddings</strong> - each word has a fixed representation regardless of context. In our paper, we used 100-dimensional <em>Word2Vec Continuous Skipgram</em> embeddings trained on <em>English CoNLL17 corpus</em> (<a href="https://vectors.nlpl.eu/repository/">https://vectors.nlpl.eu/repository/</a>).</p>
-<div id="5e244476" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> gensim.models <span class="im">import</span> KeyedVectors</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load pre-trained word2vec model</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>model_path <span class="op">=</span> <span class="st">"embeddings/word2vec_en.bin"</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> KeyedVectors.load_word2vec_format(model_path, binary<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract embeddings for tokens that exist in the model</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>vectors_w2v: np.ndarray <span class="op">=</span> np.asarray([model[w] <span class="cf">for</span> w <span class="kw">in</span> tokens <span class="cf">if</span> w <span class="kw">in</span> model])</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate CoCo series for word2vec embeddings</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>lags_w2v, coco_w2v <span class="op">=</span> calculate_coco_series(vectors_w2v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="ac1182fb" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> gensim.models <span class="im">import</span> KeyedVectors</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load pre-trained word2vec model</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>model_path <span class="op">=</span> <span class="st">"embeddings/word2vec_en.bin"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> KeyedVectors.load_word2vec_format(model_path, binary<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract embeddings for tokens that exist in the model</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>vectors_w2v: np.ndarray <span class="op">=</span> np.asarray([model[w] <span class="cf">for</span> w <span class="kw">in</span> tokens <span class="cf">if</span> w <span class="kw">in</span> model])</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate CoCo series for word2vec embeddings</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>lags_w2v, coco_w2v <span class="op">=</span> calculate_coco_series(vectors_w2v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="openai-embeddings" class="level3">
@@ -421,92 +427,76 @@ Cosine Correlation at lag 5: -0.001823</code></pre>
 <p>Instead of static embeddings for indiviual words, here we can embed longer texts, such as senteces, paragraphs, or even entire documents. The embeddings are context-aware, meaning the same word can have different representations depending on its usage.</p>
 <p>According to OpenAI documentation, we can reduce number of dimensions without losing semantic properties. In this demonstration we’ll use full 1536-dimensional <code>text-embedding-3-small</code>, as well as reduced one with 100 dimensions for consistency with our Word2Vec embeddings.</p>
 <p>For this demonstration with relatively small number of tokens, the cost is negligible (&lt; $0.01 USD). However, for larger datasets with thousands of tokens, we could use OpenAI’s <a href="https://dev.to/jfreveb/batch-api-k7c">Batch API</a>, which offers 50% cost savings and higher rate limits.</p>
-<div id="a95b6c99" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> openai</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="a4403b25" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> openai</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="42a657eb" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_embeddings(tokens: List[<span class="bu">str</span>], model: <span class="bu">str</span>, dimensions: <span class="bu">int</span>) <span class="op">-&gt;</span> List[List[<span class="bu">float</span>]]:</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"text-embedding-3-small"</span>, <span class="st">"text-embedding-3-large"</span>]:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Unsupported model: </span><span class="sc">{</span>model<span class="sc">}</span><span class="ss">. Supported models are 'text-embedding-3-small' and 'text-embedding-3-large'."</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> openai.embeddings.create(<span class="bu">input</span><span class="op">=</span>tokens, model<span class="op">=</span>model, dimensions<span class="op">=</span>dimensions)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [item.embedding <span class="cf">for</span> item <span class="kw">in</span> response.data]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="563c2825" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_embeddings(tokens: List[<span class="bu">str</span>], model: <span class="bu">str</span>, dimensions: <span class="bu">int</span>) <span class="op">-&gt;</span> List[List[<span class="bu">float</span>]]:</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"text-embedding-3-small"</span>, <span class="st">"text-embedding-3-large"</span>]:</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Unsupported model: </span><span class="sc">{</span>model<span class="sc">}</span><span class="ss">. Supported models are 'text-embedding-3-small' and 'text-embedding-3-large'."</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> openai.embeddings.create(<span class="bu">input</span><span class="op">=</span>tokens, model<span class="op">=</span>model, dimensions<span class="op">=</span>dimensions)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [item.embedding <span class="cf">for</span> item <span class="kw">in</span> response.data]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="2a04caa4" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_embeddings_dictionary(tokens: List[<span class="bu">str</span>], model: <span class="bu">str</span>, dimensions: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">dict</span>:</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">""" Load cached embeddings or create new ones using OpenAI API. """</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create filename based on model and dimensions</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    embeddings_dictionary_path <span class="op">=</span> <span class="ss">f"embedding_dictionary_</span><span class="sc">{</span>model<span class="sc">}</span><span class="ss">_</span><span class="sc">{</span>dimensions<span class="sc">}</span><span class="ss">.json"</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load or create embeddings dictionary</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> os.path.exists(embeddings_dictionary_path):</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Loading cached OpenAI embeddings from </span><span class="sc">{</span>embeddings_dictionary_path<span class="sc">}</span><span class="ss">..."</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(embeddings_dictionary_path, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>            embeddings_dictionary <span class="op">=</span> json.load(f)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Fetching embeddings from OpenAI API using </span><span class="sc">{</span>model<span class="sc">}</span><span class="ss"> with </span><span class="sc">{</span>dimensions<span class="sc">}</span><span class="ss"> dimensions..."</span>)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        vocabulary <span class="op">=</span> <span class="bu">list</span>(<span class="bu">set</span>(tokens))</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        vocabulary <span class="op">=</span> [token <span class="cf">for</span> token <span class="kw">in</span> vocabulary <span class="cf">if</span> token.strip()]</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        embeddings <span class="op">=</span> []</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        batch_size <span class="op">=</span> <span class="dv">2048</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(vocabulary), batch_size):</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>            batch <span class="op">=</span> vocabulary[i:i <span class="op">+</span> batch_size]</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Processing batch </span><span class="sc">{</span>i<span class="op">//</span>batch_size <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>(<span class="bu">len</span>(vocabulary)<span class="op">-</span><span class="dv">1</span>)<span class="op">//</span>batch_size <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>            batch_embeddings <span class="op">=</span> get_embeddings(batch, model<span class="op">=</span>model, dimensions<span class="op">=</span>dimensions)</span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>            embeddings.extend(batch_embeddings)</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        embeddings_dictionary <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(vocabulary, embeddings))</span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cache the results</span></span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(embeddings_dictionary_path, <span class="st">'w'</span>) <span class="im">as</span> f:</span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>            json.dump(embeddings_dictionary, f, indent<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Cached </span><span class="sc">{</span><span class="bu">len</span>(embeddings_dictionary)<span class="sc">}</span><span class="ss"> embeddings to </span><span class="sc">{</span>embeddings_dictionary_path<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Loaded embeddings for </span><span class="sc">{</span><span class="bu">len</span>(embeddings_dictionary)<span class="sc">}</span><span class="ss"> unique tokens"</span>)</span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> embeddings_dictionary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="897bf80b" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_embeddings_dictionary(tokens: List[<span class="bu">str</span>], model: <span class="bu">str</span>, dimensions: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">dict</span>:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">""" Load cached embeddings or create new ones using OpenAI API. """</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create filename based on model and dimensions</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    embeddings_dictionary_path <span class="op">=</span> <span class="ss">f"embedding_dictionary_</span><span class="sc">{</span>model<span class="sc">}</span><span class="ss">_</span><span class="sc">{</span>dimensions<span class="sc">}</span><span class="ss">.json"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load or create embeddings dictionary</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> os.path.exists(embeddings_dictionary_path):</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Loading cached OpenAI embeddings from </span><span class="sc">{</span>embeddings_dictionary_path<span class="sc">}</span><span class="ss">..."</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(embeddings_dictionary_path, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            embeddings_dictionary <span class="op">=</span> json.load(f)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Fetching embeddings from OpenAI API using </span><span class="sc">{</span>model<span class="sc">}</span><span class="ss"> with </span><span class="sc">{</span>dimensions<span class="sc">}</span><span class="ss"> dimensions..."</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        vocabulary <span class="op">=</span> <span class="bu">list</span>(<span class="bu">set</span>(tokens))</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        vocabulary <span class="op">=</span> [token <span class="cf">for</span> token <span class="kw">in</span> vocabulary <span class="cf">if</span> token.strip()]</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        embeddings <span class="op">=</span> []</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        batch_size <span class="op">=</span> <span class="dv">2048</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(vocabulary), batch_size):</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>            batch <span class="op">=</span> vocabulary[i:i <span class="op">+</span> batch_size]</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Processing batch </span><span class="sc">{</span>i<span class="op">//</span>batch_size <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>(<span class="bu">len</span>(vocabulary)<span class="op">-</span><span class="dv">1</span>)<span class="op">//</span>batch_size <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>            batch_embeddings <span class="op">=</span> get_embeddings(batch, model<span class="op">=</span>model, dimensions<span class="op">=</span>dimensions)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>            embeddings.extend(batch_embeddings)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        embeddings_dictionary <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(vocabulary, embeddings))</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cache the results</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(embeddings_dictionary_path, <span class="st">'w'</span>) <span class="im">as</span> f:</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            json.dump(embeddings_dictionary, f, indent<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Cached </span><span class="sc">{</span><span class="bu">len</span>(embeddings_dictionary)<span class="sc">}</span><span class="ss"> embeddings to </span><span class="sc">{</span>embeddings_dictionary_path<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Loaded embeddings for </span><span class="sc">{</span><span class="bu">len</span>(embeddings_dictionary)<span class="sc">}</span><span class="ss"> unique tokens"</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> embeddings_dictionary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="052e3a7e" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>embeddings_dictionary_100 <span class="op">=</span> load_embeddings_dictionary(</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    tokens<span class="op">=</span>tokens, </span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"text-embedding-3-small"</span>, </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    dimensions<span class="op">=</span><span class="dv">100</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Or with different parameters:</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>embeddings_dictionary_1536 <span class="op">=</span> load_embeddings_dictionary(</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    tokens<span class="op">=</span>tokens, </span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"text-embedding-3-small"</span>, </span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    dimensions<span class="op">=</span><span class="dv">1536</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Fetching embeddings from OpenAI API using text-embedding-3-small with 100 dimensions...
-Processing batch 1/4
-Processing batch 2/4
-Processing batch 3/4
-Processing batch 4/4
-Cached 6696 embeddings to embedding_dictionary_text-embedding-3-small_100.json
-Loaded embeddings for 6696 unique tokens
-Fetching embeddings from OpenAI API using text-embedding-3-small with 1536 dimensions...
-Processing batch 1/4
-Processing batch 2/4
-Processing batch 3/4
-Processing batch 4/4
-Cached 6696 embeddings to embedding_dictionary_text-embedding-3-small_1536.json
-Loaded embeddings for 6696 unique tokens</code></pre>
+<div id="a2b7f2e3" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>embeddings_dictionary_100 <span class="op">=</span> load_embeddings_dictionary(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    tokens<span class="op">=</span>tokens, </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"text-embedding-3-small"</span>, </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    dimensions<span class="op">=</span><span class="dv">100</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Or with different parameters:</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>embeddings_dictionary_1536 <span class="op">=</span> load_embeddings_dictionary(</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    tokens<span class="op">=</span>tokens, </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"text-embedding-3-small"</span>, </span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    dimensions<span class="op">=</span><span class="dv">1536</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<div id="1ad5a7cc" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract OpenAI embeddings for our tokens</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>vectors_openai_100: np.ndarray <span class="op">=</span> np.asarray([embeddings_dictionary_100[w] <span class="cf">for</span> w <span class="kw">in</span> tokens <span class="cf">if</span> w <span class="kw">in</span> embeddings_dictionary_100])</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>vectors_openai_1536: np.ndarray <span class="op">=</span> np.asarray([embeddings_dictionary_1536[w] <span class="cf">for</span> w <span class="kw">in</span> tokens <span class="cf">if</span> w <span class="kw">in</span> embeddings_dictionary_1536])</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate CoCo series for OpenAI embeddings</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>lag_openai_100, coco_openai_100 <span class="op">=</span> calculate_coco_series(vectors_openai_100)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>lag_openai_1536, coco_openai_1536 <span class="op">=</span> calculate_coco_series(vectors_openai_1536)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="55e8c51b" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract OpenAI embeddings for our tokens</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>vectors_openai_100: np.ndarray <span class="op">=</span> np.asarray([embeddings_dictionary_100[w] <span class="cf">for</span> w <span class="kw">in</span> tokens <span class="cf">if</span> w <span class="kw">in</span> embeddings_dictionary_100])</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>vectors_openai_1536: np.ndarray <span class="op">=</span> np.asarray([embeddings_dictionary_1536[w] <span class="cf">for</span> w <span class="kw">in</span> tokens <span class="cf">if</span> w <span class="kw">in</span> embeddings_dictionary_1536])</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate CoCo series for OpenAI embeddings</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>lag_openai_100, coco_openai_100 <span class="op">=</span> calculate_coco_series(vectors_openai_100)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>lag_openai_1536, coco_openai_1536 <span class="op">=</span> calculate_coco_series(vectors_openai_1536)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -515,216 +505,189 @@ Loaded embeddings for 6696 unique tokens</code></pre>
 <section id="fit-decay-curves" class="level3">
 <h3 class="anchored" data-anchor-id="fit-decay-curves">Fit decay curves</h3>
 <p>To understand the nature of long-range dependencies in our data, we’ll fit two theoretical models to the absolute value of our cosine correlation curves: power law decay and stretched exponential decay. During the research we noticed that generally CoCo dissolves into a noise for lags larger than 1000. Therefore, we will fit the models only for lags up to 1000.</p>
-<div id="bc1eaebc" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> curve_fit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="bcecf106" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> curve_fit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="d1e60d1c" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> power_law(x: np.ndarray, a: <span class="bu">float</span>, b: <span class="bu">float</span>) <span class="op">-&gt;</span> np.ndarray:</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">*</span> (x <span class="op">**</span> b)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> stretched_exponential(x: np.ndarray, a: <span class="bu">float</span>, b: <span class="bu">float</span>, c: <span class="bu">float</span>) <span class="op">-&gt;</span> np.ndarray:</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.exp(<span class="op">-</span>a <span class="op">*</span> (x <span class="op">**</span> b) <span class="op">+</span> c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="fa0636de" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> power_law(x: np.ndarray, a: <span class="bu">float</span>, b: <span class="bu">float</span>) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">*</span> (x <span class="op">**</span> b)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> stretched_exponential(x: np.ndarray, a: <span class="bu">float</span>, b: <span class="bu">float</span>, c: <span class="bu">float</span>) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.exp(<span class="op">-</span>a <span class="op">*</span> (x <span class="op">**</span> b) <span class="op">+</span> c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="71825709" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fit_curve(lags: np.ndarray, coco: np.ndarray, model: <span class="bu">str</span>) <span class="op">-&gt;</span> np.ndarray:</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    y_data <span class="op">=</span> np.<span class="bu">abs</span>(coco)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> model <span class="op">==</span> <span class="st">"power_law"</span>:</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>            popt, pcov <span class="op">=</span> curve_fit(</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                f<span class="op">=</span>power_law,</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                xdata<span class="op">=</span>lags,</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                ydata<span class="op">=</span>y_data,</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                bounds<span class="op">=</span>([<span class="op">-</span>np.inf, <span class="op">-</span>np.inf], [np.inf, <span class="dv">0</span>]),</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                maxfev<span class="op">=</span><span class="dv">5000</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>            )</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>            y_pred <span class="op">=</span> power_law(lags, <span class="op">*</span>popt)</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> model <span class="op">==</span> <span class="st">"stretched_exponential"</span>:</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>            popt, pcov <span class="op">=</span> curve_fit(</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>                f<span class="op">=</span>stretched_exponential,</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>                xdata<span class="op">=</span>lags,</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>                ydata<span class="op">=</span>y_data,</span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>                bounds<span class="op">=</span>([<span class="dv">0</span>, <span class="dv">0</span>, <span class="op">-</span>np.inf], [np.inf, <span class="dv">1</span>, np.inf]),</span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>                maxfev<span class="op">=</span><span class="dv">5000</span></span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>            )</span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>            y_pred <span class="op">=</span> stretched_exponential(lags, <span class="op">*</span>popt)</span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Unsupported model type. Use 'power_law' or 'stretched_exponential'."</span>)</span>
-<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> popt</span>
-<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Fitting failed for </span><span class="sc">{</span>model<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="ea7e784a" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fit_curve(lags: np.ndarray, coco: np.ndarray, model: <span class="bu">str</span>) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    y_data <span class="op">=</span> np.<span class="bu">abs</span>(coco)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> model <span class="op">==</span> <span class="st">"power_law"</span>:</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>            popt, pcov <span class="op">=</span> curve_fit(</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                f<span class="op">=</span>power_law,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                xdata<span class="op">=</span>lags,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                ydata<span class="op">=</span>y_data,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>                bounds<span class="op">=</span>([<span class="op">-</span>np.inf, <span class="op">-</span>np.inf], [np.inf, <span class="dv">0</span>]),</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>                maxfev<span class="op">=</span><span class="dv">5000</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>            y_pred <span class="op">=</span> power_law(lags, <span class="op">*</span>popt)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> model <span class="op">==</span> <span class="st">"stretched_exponential"</span>:</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>            popt, pcov <span class="op">=</span> curve_fit(</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>                f<span class="op">=</span>stretched_exponential,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>                xdata<span class="op">=</span>lags,</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>                ydata<span class="op">=</span>y_data,</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>                bounds<span class="op">=</span>([<span class="dv">0</span>, <span class="dv">0</span>, <span class="op">-</span>np.inf], [np.inf, <span class="dv">1</span>, np.inf]),</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>                maxfev<span class="op">=</span><span class="dv">5000</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>            y_pred <span class="op">=</span> stretched_exponential(lags, <span class="op">*</span>popt)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Unsupported model type. Use 'power_law' or 'stretched_exponential'."</span>)</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> popt</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Fitting failed for </span><span class="sc">{</span>model<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="76291de8" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit models to both embedding types</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>min_lag, max_lag <span class="op">=</span> <span class="dv">1</span>, <span class="dv">1000</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Word2Vec fits</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>mask_w2v <span class="op">=</span> (lags_w2v <span class="op">&gt;=</span> min_lag) <span class="op">&amp;</span> (lags_w2v <span class="op">&lt;=</span> max_lag)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>pl_params_w2v <span class="op">=</span> fit_curve(lags_w2v[mask_w2v], coco_w2v[mask_w2v], <span class="st">"power_law"</span>)</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>se_params_w2v <span class="op">=</span> fit_curve(lags_w2v[mask_w2v], coco_w2v[mask_w2v], <span class="st">"stretched_exponential"</span>)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># OpenAI fits</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>mask_openai_100 <span class="op">=</span> (lag_openai_100 <span class="op">&gt;=</span> min_lag) <span class="op">&amp;</span> (lag_openai_100 <span class="op">&lt;=</span> max_lag)</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>pl_params_openai_100 <span class="op">=</span> fit_curve(lag_openai_100[mask_openai_100], coco_openai_100[mask_openai_100], <span class="st">"power_law"</span>)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>se_params_openai_100 <span class="op">=</span> fit_curve(lag_openai_100[mask_openai_100], coco_openai_100[mask_openai_100], <span class="st">"stretched_exponential"</span>)</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>mask_openai_1536 <span class="op">=</span> (lag_openai_1536 <span class="op">&gt;=</span> min_lag) <span class="op">&amp;</span> (lag_openai_1536 <span class="op">&lt;=</span> max_lag)</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>pl_params_openai_1536 <span class="op">=</span> fit_curve(lag_openai_1536[mask_openai_1536], coco_openai_1536[mask_openai_1536], <span class="st">"power_law"</span>)</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>se_params_openai_1536 <span class="op">=</span> fit_curve(lag_openai_1536[mask_openai_1536], coco_openai_1536[mask_openai_1536], <span class="st">"stretched_exponential"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="fd163170" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit models to both embedding types</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>min_lag, max_lag <span class="op">=</span> <span class="dv">1</span>, <span class="dv">1000</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Word2Vec fits</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>mask_w2v <span class="op">=</span> (lags_w2v <span class="op">&gt;=</span> min_lag) <span class="op">&amp;</span> (lags_w2v <span class="op">&lt;=</span> max_lag)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>pl_params_w2v <span class="op">=</span> fit_curve(lags_w2v[mask_w2v], coco_w2v[mask_w2v], <span class="st">"power_law"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>se_params_w2v <span class="op">=</span> fit_curve(lags_w2v[mask_w2v], coco_w2v[mask_w2v], <span class="st">"stretched_exponential"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># OpenAI fits</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>mask_openai_100 <span class="op">=</span> (lag_openai_100 <span class="op">&gt;=</span> min_lag) <span class="op">&amp;</span> (lag_openai_100 <span class="op">&lt;=</span> max_lag)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>pl_params_openai_100 <span class="op">=</span> fit_curve(lag_openai_100[mask_openai_100], coco_openai_100[mask_openai_100], <span class="st">"power_law"</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>se_params_openai_100 <span class="op">=</span> fit_curve(lag_openai_100[mask_openai_100], coco_openai_100[mask_openai_100], <span class="st">"stretched_exponential"</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>mask_openai_1536 <span class="op">=</span> (lag_openai_1536 <span class="op">&gt;=</span> min_lag) <span class="op">&amp;</span> (lag_openai_1536 <span class="op">&lt;=</span> max_lag)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>pl_params_openai_1536 <span class="op">=</span> fit_curve(lag_openai_1536[mask_openai_1536], coco_openai_1536[mask_openai_1536], <span class="st">"power_law"</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>se_params_openai_1536 <span class="op">=</span> fit_curve(lag_openai_1536[mask_openai_1536], coco_openai_1536[mask_openai_1536], <span class="st">"stretched_exponential"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="visualize-results" class="level3">
 <h3 class="anchored" data-anchor-id="visualize-results">Visualize results</h3>
-<div id="940b217b" class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_plot(lags, coco, popt_pl, popt_se, title):</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Data points</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    plt.loglog(lags, np.<span class="bu">abs</span>(coco), <span class="st">'o'</span>, label<span class="op">=</span><span class="st">'Data points'</span>)</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Power law fit</span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    plt.loglog(lags, power_law(np.array(lags), <span class="op">*</span>popt_pl), <span class="st">'r-'</span>, </span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f'Power law: y = </span><span class="sc">{</span>popt_pl[<span class="dv">0</span>]<span class="sc">:.4f}</span><span class="ss">x^(</span><span class="sc">{</span>popt_pl[<span class="dv">1</span>]<span class="sc">:.4f}</span><span class="ss">)'</span>)</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Stretched exponential fit</span></span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    plt.loglog(lags, stretched_exponential(np.array(lags), <span class="op">*</span>popt_se), <span class="st">'g-'</span>, </span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f'Stretched exp: y = exp(-</span><span class="sc">{</span>popt_se[<span class="dv">0</span>]<span class="sc">:.4f}</span><span class="ss">(x^</span><span class="sc">{</span>popt_se[<span class="dv">1</span>]<span class="sc">:.4f}</span><span class="ss">) + </span><span class="sc">{</span>popt_se[<span class="dv">2</span>]<span class="sc">:.4f}</span><span class="ss">)'</span>)</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">'n'</span>)</span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">''</span>)</span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    plt.title(title)</span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    plt.grid(<span class="va">True</span>, which<span class="op">=</span><span class="st">"both"</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    plt.ylim(<span class="fl">1e-6</span>, <span class="fl">1e0</span>)</span>
-<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="d407314a" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_plot(lags, coco, popt_pl, popt_se, title):</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Data points</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    plt.loglog(lags, np.<span class="bu">abs</span>(coco), <span class="st">'o'</span>, label<span class="op">=</span><span class="st">'Data points'</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Power law fit</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    plt.loglog(lags, power_law(np.array(lags), <span class="op">*</span>popt_pl), <span class="st">'r-'</span>, </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f'Power law: y = </span><span class="sc">{</span>popt_pl[<span class="dv">0</span>]<span class="sc">:.4f}</span><span class="ss">x^(</span><span class="sc">{</span>popt_pl[<span class="dv">1</span>]<span class="sc">:.4f}</span><span class="ss">)'</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Stretched exponential fit</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    plt.loglog(lags, stretched_exponential(np.array(lags), <span class="op">*</span>popt_se), <span class="st">'g-'</span>, </span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f'Stretched exp: y = exp(-</span><span class="sc">{</span>popt_se[<span class="dv">0</span>]<span class="sc">:.4f}</span><span class="ss">(x^</span><span class="sc">{</span>popt_se[<span class="dv">1</span>]<span class="sc">:.4f}</span><span class="ss">) + </span><span class="sc">{</span>popt_se[<span class="dv">2</span>]<span class="sc">:.4f}</span><span class="ss">)'</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">'n'</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">''</span>)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    plt.title(title)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    plt.grid(<span class="va">True</span>, which<span class="op">=</span><span class="st">"both"</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    plt.ylim(<span class="fl">1e-6</span>, <span class="fl">1e0</span>)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="260bd85d" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>make_plot(</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    lags<span class="op">=</span>lags_w2v,</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    coco<span class="op">=</span>coco_w2v,</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    popt_pl<span class="op">=</span>pl_params_w2v,</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    popt_se<span class="op">=</span>se_params_w2v,</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"CoCo decay for Word2Vec Embeddings"</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-18-output-1.png" width="1141" height="564" class="figure-img"></p>
-</figure>
+<div id="b3a7c0c3" class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>make_plot(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    lags<span class="op">=</span>lags_w2v,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    coco<span class="op">=</span>coco_w2v,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    popt_pl<span class="op">=</span>pl_params_w2v,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    popt_se<span class="op">=</span>se_params_w2v,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"CoCo decay for Word2Vec Embeddings"</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div id="8419dee1" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>make_plot(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    lags<span class="op">=</span>lag_openai_100,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    coco<span class="op">=</span>coco_openai_100,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    popt_pl<span class="op">=</span>pl_params_openai_100,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    popt_se<span class="op">=</span>se_params_openai_100,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"CoCo decay for OpenAI Embeddings (100 dimensions)"</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<div id="7a3712a7" class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>make_plot(</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    lags<span class="op">=</span>lag_openai_100,</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    coco<span class="op">=</span>coco_openai_100,</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    popt_pl<span class="op">=</span>pl_params_openai_100,</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    popt_se<span class="op">=</span>se_params_openai_100,</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"CoCo decay for OpenAI Embeddings (100 dimensions)"</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-19-output-1.png" width="1141" height="564" class="figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="62d53f64" class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>make_plot(</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    lags<span class="op">=</span>lag_openai_1536,</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    coco<span class="op">=</span>coco_openai_1536,</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    popt_pl<span class="op">=</span>pl_params_openai_1536,</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    popt_se<span class="op">=</span>se_params_openai_1536,</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"CoCo decay for OpenAI Embeddings (1536 dimensions)"</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-20-output-1.png" width="1141" height="564" class="figure-img"></p>
-</figure>
-</div>
-</div>
+<div id="5ce46b26" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>make_plot(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    lags<span class="op">=</span>lag_openai_1536,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    coco<span class="op">=</span>coco_openai_1536,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    popt_pl<span class="op">=</span>pl_params_openai_1536,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    popt_se<span class="op">=</span>se_params_openai_1536,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"CoCo decay for OpenAI Embeddings (1536 dimensions)"</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="fit-quality" class="level3">
 <h3 class="anchored" data-anchor-id="fit-quality">Fit quality</h3>
 <p>Post-hoc assessment of the fit quality was measured using the <em>sum of squared logarithmic residuals</em> (SSLR), which is just transformed version of the <em>sum of squared residuals</em>.</p>
-<div id="1f550485" class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_sslr(y_obs: np.array, y_pred: np.array, num_params: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter out non-positive values that would cause log errors</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> (y_obs <span class="op">&gt;</span> <span class="dv">0</span>) <span class="op">&amp;</span> (y_pred <span class="op">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    y_obs_filtered <span class="op">=</span> y_obs[mask]</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    y_pred_filtered <span class="op">=</span> y_pred[mask]</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    N <span class="op">=</span> <span class="bu">len</span>(y_obs_filtered)</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> N <span class="op">&lt;=</span> num_params:</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(<span class="st">'inf'</span>)  <span class="co"># Avoid division by zero</span></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sum of squared logarithmic residuals</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    log_residuals <span class="op">=</span> np.<span class="bu">sum</span>((np.log(y_obs_filtered) <span class="op">-</span> np.log(y_pred_filtered))<span class="op">**</span><span class="dv">2</span>)</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Divide by degrees of freedom (N - number of parameters)</span></span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> log_residuals <span class="op">/</span> (N <span class="op">-</span> num_params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="1bcdcc0f" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_sslr(y_obs: np.array, y_pred: np.array, num_params: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter out non-positive values that would cause log errors</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> (y_obs <span class="op">&gt;</span> <span class="dv">0</span>) <span class="op">&amp;</span> (y_pred <span class="op">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    y_obs_filtered <span class="op">=</span> y_obs[mask]</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    y_pred_filtered <span class="op">=</span> y_pred[mask]</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    N <span class="op">=</span> <span class="bu">len</span>(y_obs_filtered)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> N <span class="op">&lt;=</span> num_params:</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(<span class="st">'inf'</span>)  <span class="co"># Avoid division by zero</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sum of squared logarithmic residuals</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    log_residuals <span class="op">=</span> np.<span class="bu">sum</span>((np.log(y_obs_filtered) <span class="op">-</span> np.log(y_pred_filtered))<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Divide by degrees of freedom (N - number of parameters)</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> log_residuals <span class="op">/</span> (N <span class="op">-</span> num_params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="4d2a01fb" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>sslr_w2v_pl <span class="op">=</span> calculate_sslr(</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_w2v,</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>power_law(np.array(lags_w2v), <span class="op">*</span>pl_params_w2v),</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">2</span>    </span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>sslr_openai_pl_100 <span class="op">=</span> calculate_sslr(</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_100,</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>power_law(np.array(lag_openai_100), <span class="op">*</span>pl_params_openai_100),</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">2</span></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>sslr_openai_pl_1536 <span class="op">=</span> calculate_sslr(</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_1536,</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>power_law(np.array(lag_openai_1536), <span class="op">*</span>pl_params_openai_1536),</span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">2</span></span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>sslr_w2v_se <span class="op">=</span> calculate_sslr(</span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_w2v,</span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>stretched_exponential(np.array(lags_w2v), <span class="op">*</span>se_params_w2v),</span>
-<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>sslr_openai_se_100 <span class="op">=</span> calculate_sslr(</span>
-<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_100,</span>
-<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>stretched_exponential(np.array(lag_openai_100), <span class="op">*</span>se_params_openai_100),</span>
-<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>sslr_openai_se_1536 <span class="op">=</span> calculate_sslr(</span>
-<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_1536,</span>
-<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>stretched_exponential(np.array(lag_openai_1536), <span class="op">*</span>se_params_openai_1536),</span>
-<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">3</span></span>
-<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="aabeaff6" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>sslr_w2v_pl <span class="op">=</span> calculate_sslr(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_w2v,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>power_law(np.array(lags_w2v), <span class="op">*</span>pl_params_w2v),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">2</span>    </span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>sslr_openai_pl_100 <span class="op">=</span> calculate_sslr(</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_100,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>power_law(np.array(lag_openai_100), <span class="op">*</span>pl_params_openai_100),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>sslr_openai_pl_1536 <span class="op">=</span> calculate_sslr(</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_1536,</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>power_law(np.array(lag_openai_1536), <span class="op">*</span>pl_params_openai_1536),</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>sslr_w2v_se <span class="op">=</span> calculate_sslr(</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_w2v,</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>stretched_exponential(np.array(lags_w2v), <span class="op">*</span>se_params_w2v),</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>sslr_openai_se_100 <span class="op">=</span> calculate_sslr(</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_100,</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>stretched_exponential(np.array(lag_openai_100), <span class="op">*</span>se_params_openai_100),</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>sslr_openai_se_1536 <span class="op">=</span> calculate_sslr(</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    y_obs<span class="op">=</span>coco_openai_1536,</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    y_pred<span class="op">=</span>stretched_exponential(np.array(lag_openai_1536), <span class="op">*</span>se_params_openai_1536),</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    num_params<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cbe82a3b" class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary table</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>summary_data <span class="op">=</span> {</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model"</span>: [<span class="st">"Word2Vec"</span>, <span class="st">"OpenAI (100 dim)"</span>, <span class="st">"OpenAI (1536 dim)"</span>],</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Power Law SSLR"</span>: [sslr_w2v_pl, sslr_openai_pl_100, sslr_openai_pl_1536],</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Stretched Exponential SSLR"</span>: [sslr_w2v_se, sslr_openai_se_100, sslr_openai_se_1536]</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>summary_df <span class="op">=</span> pd.DataFrame(summary_data)</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(summary_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>               Model  Power Law SSLR  Stretched Exponential SSLR
-0           Word2Vec        1.447539                    3.490593
-1   OpenAI (100 dim)        1.426808                  167.581219
-2  OpenAI (1536 dim)        1.278742                  101.538129</code></pre>
-</div>
+<div id="fdd920ca" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary table</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>summary_data <span class="op">=</span> {</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model"</span>: [<span class="st">"Word2Vec"</span>, <span class="st">"OpenAI (100 dim)"</span>, <span class="st">"OpenAI (1536 dim)"</span>],</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Power Law SSLR"</span>: [sslr_w2v_pl, sslr_openai_pl_100, sslr_openai_pl_1536],</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Stretched Exponential SSLR"</span>: [sslr_w2v_se, sslr_openai_se_100, sslr_openai_se_1536]</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>summary_df <span class="op">=</span> pd.DataFrame(summary_data)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(summary_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>

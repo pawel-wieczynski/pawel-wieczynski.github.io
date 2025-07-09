@@ -157,12 +157,25 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../../posts.html"> 
 <span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="mailto:wieczynskipawel@gmail.com"> <i class="bi bi-envelope" role="img">
+</i> 
+<span class="menu-text">Email</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.linkedin.com/in/pawel-wieczynski/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text">LinkedIn</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/pawel-wieczynski"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -275,7 +288,7 @@ window.Quarto = {
 <h1>GPR from scratch</h1>
 <section id="toy-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="toy-dataset">Toy dataset</h2>
-<div id="7880db7d" class="cell" data-execution_count="1">
+<div id="855daec4" class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gpytorch</span>
@@ -286,7 +299,7 @@ window.Quarto = {
 f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
 \]</span></p>
 <p>Our training outcomes <span class="math inline">\(y_i\)</span> are sampled from <span class="math inline">\(f\)</span> with noise <span class="math inline">\(\epsilon \sim \mathcal{N} (0, 0.05)\)</span>. In below example we have <span class="math inline">\(n=10\)</span> training data points.</p>
-<div id="8732860c" class="cell" data-execution_count="2">
+<div id="18273c8d" class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>x_max <span class="op">=</span> <span class="dv">2</span><span class="op">*</span>np.pi</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> true_function(x):</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.cos(<span class="dv">2</span><span class="op">*</span>x) <span class="op">+</span> <span class="fl">0.5</span><span class="op">*</span>x</span>
@@ -303,25 +316,18 @@ f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>plt.scatter(train_x, train_y, c <span class="op">=</span> <span class="st">"#ff7f0e"</span>, label <span class="op">=</span> <span class="st">"Training points"</span>)</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-3-output-1.png" width="558" height="411" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="gpr-class-implementation" class="level2">
 <h2 class="anchored" data-anchor-id="gpr-class-implementation"><code>GPR</code> class implementation</h2>
 <p>In below definition of RBF kernel we assume for simplicity that <span class="math inline">\(\sigma^2 = 1\)</span>, <span class="math inline">\(\mathcal{l} = 1 / \sqrt{2}\)</span>, <span class="math inline">\(\sigma^2\epsilon = 0\)</span>. Later we will optimize them.</p>
-<div id="482a36dc" class="cell" data-execution_count="3">
+<div id="2561fa3f" class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gaussian_kernel(x1, x2):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.exp(<span class="op">-</span>(x1 <span class="op">-</span> x2)<span class="op">**</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We initialize class <code>GPR</code> with training samples (optionally we can specify amount of noise <span class="math inline">\(\sigma^2_\epsilon\)</span>). During the initialization <span class="math inline">\(K\)</span> and <span class="math inline">\((K + \sigma^2_\epsilon )^{-1}\)</span> are derived and stored in memory.</p>
 <p>Method <code>predict()</code> returns mean and variance of a posterior distribution evaluated on a test point <span class="math inline">\(x^*\)</span>. Method <code>make_plots()</code> creates a plot with true function <span class="math inline">\(f(x)\)</span>, training points <span class="math inline">\((x_i, y_i)_{i=1}^n\)</span> and predictions on test data <span class="math inline">\((x_j^*, y_j)_{j=1}^m\)</span> with shaded areas for mean predictions <span class="math inline">\(\pm 1- 3\)</span> standard deviations.</p>
-<div id="6fef6552" class="cell" data-execution_count="4">
+<div id="4d277770" class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> GPR:</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, x, y, noise <span class="op">=</span> <span class="dv">0</span>):</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.x <span class="op">=</span> x</span>
@@ -351,7 +357,7 @@ f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
 <span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="16640edb" class="cell" data-execution_count="5">
+<div id="30842200" class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GPR(train_x, train_y)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> []</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>variances <span class="op">=</span> []</span>
@@ -361,15 +367,8 @@ f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  predictions.append(f_new)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  variances.append(f_var)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="7145d5de" class="cell" data-execution_count="6">
+<div id="4a41c6cb" class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model.make_plot(x, y, predictions, np.sqrt(variances))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-7-output-1.png" width="569" height="411" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 <p>As we can see in the above plot, without hyperparameters optimization, GPR doesn’t yield good approximation of the true function <span class="math inline">\(f(x)\)</span>.</p>
 </section>
@@ -377,7 +376,7 @@ f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
 <section id="gpytorch" class="level1">
 <h1>GPyTorch</h1>
 <p>Let’s see if can we get better fit with optimized hyperparameters. We create class <code>MyGP</code> and initialize it by calling constructor of the parent class <code>ExactGP</code> (<a href="https://docs.gpytorch.ai/en/v1.12/models.html" class="uri">https://docs.gpytorch.ai/en/v1.12/models.html</a>). We also initialize mean function of GP as a zero and RBF kernel. Function <code>RBFKernel()</code> has learnable parameter <span class="math inline">\(\mathcal{l}\)</span>, whereas <code>ScaleKernel()</code> is a “<em>meta-kernel</em>” which scales another kernel by a learnable constant <span class="math inline">\(\sigma^2\)</span>. We also define <code>forward()</code> method which returns prior multivariate normal distribution <span class="math inline">\(\mathcal{N} (\mu, K)\)</span>.</p>
-<div id="1d959eb7" class="cell" data-execution_count="7">
+<div id="4f1ebf5f" class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyGP(gpytorch.models.ExactGP):</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, x, y, likelihood):</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(x, y, likelihood)</span>
@@ -390,158 +389,59 @@ f(x) = \cos(2x) + \frac{1}{2}x, \quad x \in [0, 2\pi]
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> gpytorch.distributions.MultivariateNormal(x_mean, x_covariance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We convert our training data to <code>torch</code> tensors and initialize our model with the training data. We also initialize noise model <span class="math inline">\(p (\mathbf{y} | \mathbf{f})\)</span> which has another learnable parameter, <span class="math inline">\(\sigma^2_\epsilon\)</span>.</p>
-<div id="d31c97a2" class="cell" data-execution_count="8">
+<div id="06856f21" class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>train_x <span class="op">=</span> torch.tensor(train_x)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>train_y <span class="op">=</span> torch.tensor(train_y)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>ll <span class="op">=</span> gpytorch.likelihoods.GaussianLikelihood()</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> MyGP(train_x, train_y, ll)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>In <code>torch</code>, layers can operate in either <em>training mode</em> or <em>evaluation mode</em> (more about this behavior: <a href="https://yassin01.medium.com/understanding-the-difference-between-model-eval-and-model-train-in-pytorch-48e3002ee0a2" class="uri">https://yassin01.medium.com/understanding-the-difference-between-model-eval-and-model-train-in-pytorch-48e3002ee0a2</a>). Now we switch to the <em>training mode</em>.</p>
-<div id="7e3ee85e" class="cell" data-execution_count="9">
+<div id="dbbc0b09" class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ll.train()</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>model2.train()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="9">
-<pre><code>MyGP(
-  (likelihood): GaussianLikelihood(
-    (noise_covar): HomoskedasticNoise(
-      (raw_noise_constraint): GreaterThan(1.000E-04)
-    )
-  )
-  (mean): ZeroMean()
-  (kernel): ScaleKernel(
-    (base_kernel): RBFKernel(
-      (raw_lengthscale_constraint): Positive()
-    )
-    (raw_outputscale_constraint): Positive()
-  )
-)</code></pre>
-</div>
 </div>
 <p>We define <code>Adam()</code> optimizer with learning rate <span class="math inline">\(\eta = 0.1\)</span> and negative log marginal likelihood to be minimized.</p>
-<div id="fade0699" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.Adam(model2.parameters(), lr <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>mll <span class="op">=</span> gpytorch.mlls.ExactMarginalLogLikelihood(ll, model2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="d887fddd" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.Adam(model2.parameters(), lr <span class="op">=</span> <span class="fl">0.1</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>mll <span class="op">=</span> gpytorch.mlls.ExactMarginalLogLikelihood(ll, model2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We run training loop for <span class="math inline">\(350\)</span> epochs.</p>
-<div id="86a5907c" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>n_iter <span class="op">=</span> <span class="dv">50</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_iter):</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    optimizer.zero_grad()</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    y_hat <span class="op">=</span> model2(train_x) <span class="co"># Forward pass -&gt; MVN</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> <span class="op">-</span>mll(y_hat, train_y) <span class="co"># Negative log-marginal likelihood</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    loss.backward()</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    optimizer.step()</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Iter </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>n_iter<span class="sc">}</span><span class="ss"> - Loss: </span><span class="sc">{</span>loss<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Iter 1/50 - Loss: 2.061
-Iter 2/50 - Loss: 2.005
-Iter 3/50 - Loss: 1.959
-Iter 4/50 - Loss: 1.918
-Iter 5/50 - Loss: 1.879
-Iter 6/50 - Loss: 1.843
-Iter 7/50 - Loss: 1.808
-Iter 8/50 - Loss: 1.776
-Iter 9/50 - Loss: 1.746
-Iter 10/50 - Loss: 1.718
-Iter 11/50 - Loss: 1.694
-Iter 12/50 - Loss: 1.672
-Iter 13/50 - Loss: 1.653
-Iter 14/50 - Loss: 1.637
-Iter 15/50 - Loss: 1.625
-Iter 16/50 - Loss: 1.615
-Iter 17/50 - Loss: 1.607
-Iter 18/50 - Loss: 1.601
-Iter 19/50 - Loss: 1.597
-Iter 20/50 - Loss: 1.592
-Iter 21/50 - Loss: 1.587
-Iter 22/50 - Loss: 1.581
-Iter 23/50 - Loss: 1.575
-Iter 24/50 - Loss: 1.568
-Iter 25/50 - Loss: 1.562
-Iter 26/50 - Loss: 1.556
-Iter 27/50 - Loss: 1.550
-Iter 28/50 - Loss: 1.545
-Iter 29/50 - Loss: 1.539
-Iter 30/50 - Loss: 1.534
-Iter 31/50 - Loss: 1.527
-Iter 32/50 - Loss: 1.519
-Iter 33/50 - Loss: 1.510
-Iter 34/50 - Loss: 1.498
-Iter 35/50 - Loss: 1.484
-Iter 36/50 - Loss: 1.468
-Iter 37/50 - Loss: 1.451
-Iter 38/50 - Loss: 1.434
-Iter 39/50 - Loss: 1.417
-Iter 40/50 - Loss: 1.402
-Iter 41/50 - Loss: 1.389
-Iter 42/50 - Loss: 1.377
-Iter 43/50 - Loss: 1.364
-Iter 44/50 - Loss: 1.349
-Iter 45/50 - Loss: 1.332
-Iter 46/50 - Loss: 1.313
-Iter 47/50 - Loss: 1.294
-Iter 48/50 - Loss: 1.276
-Iter 49/50 - Loss: 1.260
-Iter 50/50 - Loss: 1.247</code></pre>
-</div>
+<div id="41f156c0" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>n_iter <span class="op">=</span> <span class="dv">50</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_iter):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    optimizer.zero_grad()</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    y_hat <span class="op">=</span> model2(train_x) <span class="co"># Forward pass -&gt; MVN</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> <span class="op">-</span>mll(y_hat, train_y) <span class="co"># Negative log-marginal likelihood</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    loss.backward()</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    optimizer.step()</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Iter </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>n_iter<span class="sc">}</span><span class="ss"> - Loss: </span><span class="sc">{</span>loss<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below we can see optimized hyperparameters <span class="math inline">\(\theta\)</span>.</p>
-<div id="96b48f91" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> model2.named_parameters():</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(i)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>('likelihood.noise_covar.raw_noise', Parameter containing:
-tensor([-2.8747], requires_grad=True))
-('kernel.raw_outputscale', Parameter containing:
-tensor(3.1391, requires_grad=True))
-('kernel.base_kernel.raw_lengthscale', Parameter containing:
-tensor([[0.6164]], requires_grad=True))</code></pre>
-</div>
+<div id="0b3ab893" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> model2.named_parameters():</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(i)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We switch to <em>evaluation mode</em>.</p>
-<div id="0215e138" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>ll.<span class="bu">eval</span>()</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>model2.<span class="bu">eval</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
-<pre><code>MyGP(
-  (likelihood): GaussianLikelihood(
-    (noise_covar): HomoskedasticNoise(
-      (raw_noise_constraint): GreaterThan(1.000E-04)
-    )
-  )
-  (mean): ZeroMean()
-  (kernel): ScaleKernel(
-    (base_kernel): RBFKernel(
-      (raw_lengthscale_constraint): Positive()
-    )
-    (raw_outputscale_constraint): Positive()
-  )
-)</code></pre>
-</div>
+<div id="f2bd0fba" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>ll.<span class="bu">eval</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>model2.<span class="bu">eval</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, we make predictions:</p>
 <ul>
 <li><p><code>model2(test_x)</code> returns <span class="math inline">\(\mathbf{f}^*\)</span></p></li>
 <li><p><code>ll(model2(test_x)</code> add noise to <span class="math inline">\(\mathbf{f}^*\)</span>, i.e.&nbsp;it returns <span class="math inline">\(\mathbf{y}^*\)</span>.</p></li>
 </ul>
-<div id="8282f699" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad(), gpytorch.settings.fast_pred_var():</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    test_x <span class="op">=</span> torch.tensor(x)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    observed <span class="op">=</span> ll(model2(test_x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="d3ebbf94" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad(), gpytorch.settings.fast_pred_var():</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    test_x <span class="op">=</span> torch.tensor(x)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    observed <span class="op">=</span> ll(model2(test_x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="f31110fb" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>f_star <span class="op">=</span> observed.mean.numpy()</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>f_variance <span class="op">=</span> observed.stddev.numpy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="5ee1b626" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>f_star <span class="op">=</span> observed.mean.numpy()</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>f_variance <span class="op">=</span> observed.stddev.numpy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="57d61417" class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>model.make_plot(x, y, f_star, f_variance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-17-output-1.png" width="569" height="411" class="figure-img"></p>
-</figure>
-</div>
-</div>
+<div id="1541f61b" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>model.make_plot(x, y, f_star, f_variance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now, after hyperparameters optimization, we have much better fit.</p>
 </section>

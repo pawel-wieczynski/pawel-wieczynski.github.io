@@ -157,12 +157,25 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../../posts.html"> 
 <span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="mailto:wieczynskipawel@gmail.com"> <i class="bi bi-envelope" role="img">
+</i> 
+<span class="menu-text">Email</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.linkedin.com/in/pawel-wieczynski/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text">LinkedIn</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/pawel-wieczynski"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -576,34 +589,6 @@ W \leftarrow W - \eta \ \nabla W
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>tokens <span class="ot">=</span> <span class="fu">strsplit</span>(prep_text, <span class="st">"</span><span class="sc">\\</span><span class="st">s+"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>()</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(tokens) <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>    tokens Freq
-1      boy    6
-2      cat    8
-3      dog    6
-4     eats    2
-5    feeds    1
-6  follows    2
-7     food    6
-8     girl    6
-9     give    1
-10    good    1
-11   happy    3
-12     has    1
-13    home    1
-14  hungry    1
-15       i    1
-16      is    5
-17   likes    3
-18      my    1
-19     now    1
-20    runs    1
-21    sees    2
-22   share    1
-23  sleeps    1
-24    they    1
-25      to    1</code></pre>
-</div>
 </div>
 <p>It gave us:</p>
 <ul>
@@ -612,123 +597,46 @@ W \leftarrow W - \eta \ \nabla W
 </ul>
 <p>Now we train our model with <span class="math inline">\(d = 15\)</span>, <span class="math inline">\(l=1\)</span>, <span class="math inline">\(\eta = 0.1\)</span> and <span class="math inline">\(50\)</span> epochs.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set seed for reproducibility</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">torch_manual_seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the model</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>model <span class="ot">=</span> Word2Vec<span class="sc">$</span><span class="fu">new</span>(<span class="at">tokens =</span> tokens, <span class="at">embedding_dim =</span> <span class="dv">15</span>)</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the model</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">set_device</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Using GPU (CUDA)</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">build_vocabulary</span>()</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">convert_tokens_to_indices</span>()</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">initialize_weights</span>()</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>window_size  <span class="ot">=</span> <span class="dv">1</span>   <span class="co"># each side</span></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>epochs       <span class="ot">=</span> <span class="dv">50</span></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>learning_rate <span class="ot">=</span> <span class="fl">0.1</span></span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">train_model</span>(window_size, epochs, learning_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Epoch 1/50, Loss: 746.5261
-Epoch 2/50, Loss: 447.8313
-Epoch 3/50, Loss: 383.7912
-Epoch 4/50, Loss: 356.2588
-Epoch 5/50, Loss: 341.8935
-Epoch 6/50, Loss: 333.6537
-Epoch 7/50, Loss: 327.7783
-Epoch 8/50, Loss: 323.0561
-Epoch 9/50, Loss: 319.0751
-Epoch 10/50, Loss: 315.6339
-Epoch 11/50, Loss: 312.6157
-Epoch 12/50, Loss: 309.9435
-Epoch 13/50, Loss: 307.5606
-Epoch 14/50, Loss: 305.4234
-Epoch 15/50, Loss: 303.4967
-Epoch 16/50, Loss: 301.7515
-Epoch 17/50, Loss: 300.1642
-Epoch 18/50, Loss: 298.7149
-Epoch 19/50, Loss: 297.3869
-Epoch 20/50, Loss: 296.1663
-Epoch 21/50, Loss: 295.0409
-Epoch 22/50, Loss: 294.0005
-Epoch 23/50, Loss: 293.0363
-Epoch 24/50, Loss: 292.1406
-Epoch 25/50, Loss: 291.3069
-Epoch 26/50, Loss: 290.5291
-Epoch 27/50, Loss: 289.8023
-Epoch 28/50, Loss: 289.1219
-Epoch 29/50, Loss: 288.4839
-Epoch 30/50, Loss: 287.8849
-Epoch 31/50, Loss: 287.3216
-Epoch 32/50, Loss: 286.7914
-Epoch 33/50, Loss: 286.2917
-Epoch 34/50, Loss: 285.8201
-Epoch 35/50, Loss: 285.3748
-Epoch 36/50, Loss: 284.9538
-Epoch 37/50, Loss: 284.5555
-Epoch 38/50, Loss: 284.1784
-Epoch 39/50, Loss: 283.8211
-Epoch 40/50, Loss: 283.4822
-Epoch 41/50, Loss: 283.1607
-Epoch 42/50, Loss: 282.8555
-Epoch 43/50, Loss: 282.5656
-Epoch 44/50, Loss: 282.2900
-Epoch 45/50, Loss: 282.0279
-Epoch 46/50, Loss: 281.7786
-Epoch 47/50, Loss: 281.5412
-Epoch 48/50, Loss: 281.3152
-Epoch 49/50, Loss: 281.0998
-Epoch 50/50, Loss: 280.8946</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set seed for reproducibility</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">torch_manual_seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the model</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>model <span class="ot">=</span> Word2Vec<span class="sc">$</span><span class="fu">new</span>(<span class="at">tokens =</span> tokens, <span class="at">embedding_dim =</span> <span class="dv">15</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the model</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">set_device</span>()</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">build_vocabulary</span>()</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">convert_tokens_to_indices</span>()</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">initialize_weights</span>()</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>window_size  <span class="ot">=</span> <span class="dv">1</span>   <span class="co"># each side</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>epochs       <span class="ot">=</span> <span class="dv">50</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>learning_rate <span class="ot">=</span> <span class="fl">0.1</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span><span class="fu">train_model</span>(window_size, epochs, learning_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="pca-projection-of-embedding-space" class="level3">
 <h3 class="anchored" data-anchor-id="pca-projection-of-embedding-space">PCA projection of embedding space</h3>
 <p>Our final word embeddings are rows of the matrix <span class="math inline">\(W_1\)</span> of dimensionality <span class="math inline">\(25 \times 15\)</span>. We extract principal components of <span class="math inline">\(W_1\)</span>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>embedding_space <span class="ot">=</span> model<span class="sc">$</span>W1 <span class="sc">|&gt;</span> <span class="fu">as.matrix</span>()</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">=</span> <span class="fu">prcomp</span>(embedding_space, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(pca)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Importance of components:
-                          PC1    PC2    PC3     PC4     PC5     PC6     PC7
-Standard deviation     1.8047 1.5357 1.4169 1.18798 1.12567 1.01621 0.95311
-Proportion of Variance 0.2171 0.1572 0.1338 0.09409 0.08448 0.06885 0.06056
-Cumulative Proportion  0.2171 0.3743 0.5082 0.60228 0.68675 0.75560 0.81616
-                           PC8     PC9    PC10    PC11    PC12    PC13    PC14
-Standard deviation     0.82368 0.72397 0.68359 0.65974 0.50026 0.46220 0.37462
-Proportion of Variance 0.04523 0.03494 0.03115 0.02902 0.01668 0.01424 0.00936
-Cumulative Proportion  0.86139 0.89633 0.92748 0.95650 0.97318 0.98743 0.99678
-                          PC15
-Standard deviation     0.21970
-Proportion of Variance 0.00322
-Cumulative Proportion  1.00000</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>embedding_space <span class="ot">=</span> model<span class="sc">$</span>W1 <span class="sc">|&gt;</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">=</span> <span class="fu">prcomp</span>(embedding_space, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(pca)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s project embedding space into first two principal components which together explain <span class="math inline">\(37.43\%\)</span> of total variance.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2) <span class="co"># v3.5.1</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>pca_projection <span class="ot">=</span> embedding_space <span class="sc">%*%</span> pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(pca_projection) <span class="ot">=</span> <span class="fu">names</span>(model<span class="sc">$</span>vocabulary)</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(pca_projection), <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2)) <span class="sc">+</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">rownames</span>(pca_projection)), <span class="at">nudge_x =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PCA Projection of Word Embeddings"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2) <span class="co"># v3.5.1</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>pca_projection <span class="ot">=</span> embedding_space <span class="sc">%*%</span> pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(pca_projection) <span class="ot">=</span> <span class="fu">names</span>(model<span class="sc">$</span>vocabulary)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(pca_projection), <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2)) <span class="sc">+</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">rownames</span>(pca_projection)), <span class="at">nudge_x =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PCA Projection of Word Embeddings"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As we can see, “<em>similar” words</em> are close each other:</p>
 <ul>

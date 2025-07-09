@@ -11,6 +11,16 @@ website:
         text: Home
       - href: posts.qmd
         text: Blog
+    right:
+      - icon: bi-envelope
+        href: mailto:wieczynskipawel@gmail.com
+        text: Email
+      - icon: bi-linkedin
+        href: https://www.linkedin.com/in/pawel-wieczynski/
+        text: LinkedIn
+      - icon: bi-github
+        href: https://github.com/pawel-wieczynski
+        text: GitHub
   
 format:
   html:
